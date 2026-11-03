@@ -193,7 +193,7 @@ install: manifests kustomize ## Install CRDs into the K8s cluster specified in ~
 	$(KUSTOMIZE) build config/crd | $(KUBECTL) apply -f -
 
 .PHONY: uninstall
-uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
+uninstall: manifests kustomize ## Delete CRDs (removes all KubeVirtConsoleUI instances). Run after undeploy if removing the API.
 	$(KUSTOMIZE) build config/crd | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
 
 .PHONY: deploy
@@ -202,7 +202,7 @@ deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in
 	$(KUSTOMIZE) build config/deploy | $(KUBECTL) apply -f -
 
 .PHONY: undeploy
-undeploy: kustomize ## Remove operator manager resources from config/default (not the openshift-cnv namespace).
+undeploy: kustomize ## Remove operator manager from config/default (no namespace, no CRD).
 	$(KUSTOMIZE) build config/default | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
 
 ##@ Dependencies

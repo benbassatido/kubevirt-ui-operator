@@ -68,7 +68,7 @@ make deploy      # openshift-cnv Namespace (if missing), manager Deployment, RBA
 ./scripts/apply-sample-cr.sh
 ```
 
-`make deploy` applies **`config/deploy`**, which includes the **`openshift-cnv`** namespace (harmless if HCO already created it). **`make undeploy`** applies only **`config/default`**, so it removes operator resources but **does not delete** the namespace—safe on shared CNV clusters.
+`make deploy` applies **`config/deploy`** (namespace, CRD, manager RBAC/Deployment). **`make undeploy`** deletes only **`config/default`**—the operator manager and its RBAC, not **`openshift-cnv`** and not the CRD—so existing **`KubeVirtConsoleUI`** objects stay on the cluster until you remove them or run **`make uninstall`**.
 
 The manager runs in **`openshift-cnv`** (HCO convention). The sample CR may use another namespace (e.g. `openshift-cnv-test`) for an isolated UI stack. Do not install UI operands on top of an existing HCO-managed stack in the same namespace.
 
@@ -83,11 +83,16 @@ kubectl apply -f config/samples/consoleui_v1alpha1_kubevirtconsoleui.yaml
 
 If `make deploy` fails building `controller-gen`, ensure Go 1.22+ and use the Makefile’s pinned `CONTROLLER_TOOLS_VERSION` (v0.16.5), or install `controller-gen` on your `PATH`.
 
-Undeploy (does **not** delete the `openshift-cnv` namespace):
+Undeploy the operator manager (CRD and CRs remain):
 
 ```bash
-make undeploy    # operator Deployment, RBAC, etc. in openshift-cnv only
-make uninstall   # remove CRD
+make undeploy    # Deployment, RBAC, metrics Service in openshift-cnv — not the namespace or CRD
+```
+
+Remove the API (deletes **all** `KubeVirtConsoleUI` instances cluster-wide):
+
+```bash
+make uninstall   # CRD only; custom resources are garbage-collected with the CRD
 ```
 
 ### OLM bundle (optional)
