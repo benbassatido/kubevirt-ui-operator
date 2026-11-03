@@ -1,0 +1,5 @@
+# Full operator install: namespace, CRD, and manager (config/default). Undeploy uses config/default only.
+resources:
+- ../namespace
+- ../crd
+- ../default

@@ -1,0 +1,6 @@
+# Resources used to build the OLM bundle (see make bundle).
+resources:
+- bases/kubevirt-ui-operator.clusterserviceversion.yaml
+- ../default
+- ../samples
+- ../scorecard

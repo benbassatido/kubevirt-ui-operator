@@ -26,7 +26,7 @@ Same as [ROADMAP — Prerequisites](../ROADMAP.md#prerequisites-cluster-and-cons
 
 **Group:** `consoleui.kubevirt.io` (proposed)  
 **Kind:** `KubeVirtConsoleUI`  
-**Scope:** Namespaced (CR in operator or dedicated namespace; operands in `spec.namespace` or fixed `openshift-cnv` — **TBD**)
+**Scope:** Namespaced. Operands deploy in the CR’s **`metadata.namespace`**. Create that namespace before applying the CR.
 
 ### Spec (align with Helm `values.yaml`)
 
@@ -52,22 +52,21 @@ Same as [ROADMAP — Prerequisites](../ROADMAP.md#prerequisites-cluster-and-cons
 
 ## Reconcile order (proposed)
 
-1. Namespace (if created by operator)
-2. PriorityClass (if `priorityClass.create`)
-3. ServiceAccounts
-4. ConfigMaps (`nginx-conf`, user settings, features)
-5. Deployments (plugin, proxy)
-6. Services (serving-cert annotations)
-7. NetworkPolicies (if enabled)
-8. Route (if enabled)
-9. `ConsolePlugin` (`console.openshift.io`)
-10. Console operator plugin registration (if enabled)
-11. RBAC (config reader Role/RoleBinding)
+1. PriorityClass (if `priorityClass.create`) — cluster-scoped, not owner-referenced
+2. ServiceAccounts
+3. ConfigMaps (`nginx-conf`, user settings, features)
+4. Deployments (plugin, proxy)
+5. Services (serving-cert annotations)
+6. NetworkPolicies (if enabled)
+7. Route (if enabled)
+8. `ConsolePlugin` (`console.openshift.io`)
+9. Console operator plugin registration (if enabled)
+10. RBAC (config reader Role/RoleBinding)
 
 ## Open questions
 
-1. Single cluster-wide CR vs one CR per namespace?
-2. Finalizer to remove console plugin entry on CR delete?
+1. Single cluster-wide CR vs one CR per namespace? **v1alpha1:** one CR per operand namespace; CR must be installed in that namespace.
+2. Finalizer to remove console plugin entry on CR delete? **Not in v1alpha1** — `ConsolePlugin`, `PriorityClass`, and console `spec.plugins` are not garbage-collected on CR delete.
 3. Validation webhook for conflicting HCO-managed UI in same namespace?
 4. How to surface cluster TLS profile on proxy (`tlsArgs`) without coupling to HCO?
 

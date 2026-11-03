@@ -1,5 +1,5 @@
 # This kustomization.yaml is not intended to be run by itself,
 # since it depends on service name and namespace that are out of this kustomize package.
-# It is included in config/default/kustomization.yaml when the operator scaffold lands.
+# It is included in config/deploy/kustomization.yaml (not config/default, so make undeploy keeps the CRD).
 resources:
 - bases/consoleui.kubevirt.io_kubevirtconsoleuis.yaml

@@ -12,9 +12,6 @@ const (
 func Apply(spec *consoleuiv1alpha1.KubeVirtConsoleUISpec) {
 	defaultTrueBools(spec)
 
-	if spec.Namespace == "" {
-		spec.Namespace = "openshift-cnv"
-	}
 	if spec.HCOLabels.App == "" {
 		spec.HCOLabels.App = "kubevirt-hyperconverged"
 	}

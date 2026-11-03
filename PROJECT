@@ -1,6 +1,10 @@
 domain: kubevirt.io
 layout:
 - go.kubebuilder.io/v4
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
+  bundle.sdk.operatorframework.io/v2: {}
 projectName: kubevirt-ui-operator
 repo: github.com/kubevirt-ui/kubevirt-ui-operator
 resources:

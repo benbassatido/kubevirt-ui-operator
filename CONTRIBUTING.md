@@ -6,7 +6,7 @@ Thanks for helping build **kubevirt-ui-operator**. This repo ships the Helm char
 
 1. Read [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) and [docs/ROADMAP.md](docs/ROADMAP.md#prerequisites-cluster-and-console).
 2. For Helm-only changes: run `helm lint` and `helm template` (CI runs the same).
-3. For operator changes: run `make test` and `make manifests` if you change API markers; commit generated CRDs under `config/crd/bases/`.
+3. For operator changes: run `make test` and `make verify-manifests` if you change API markers; commit generated files under `config/crd/bases/` and `config/rbac/role.yaml`.
 
 ## Pull requests
 

@@ -1,0 +1,49 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: '[]'
+    capabilities: Basic Install
+  name: kubevirt-ui-operator.v0.0.0
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - description: KubeVirtConsoleUI deploys the KubeVirt OpenShift console plugin
+        stack.
+      displayName: Kube Virt Console UI
+      kind: KubeVirtConsoleUI
+      name: kubevirtconsoleuis.consoleui.kubevirt.io
+      version: v1alpha1
+  description: Installs and manages the KubeVirt OpenShift console UI stack (plugin, apiserver-proxy, ConsolePlugin) via the KubeVirtConsoleUI custom resource.
+  displayName: KubeVirt UI Operator
+  icon:
+  - base64data: ""
+    mediatype: ""
+  install:
+    spec:
+      deployments: null
+    strategy: ""
+  installModes:
+  - supported: false
+    type: OwnNamespace
+  - supported: false
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - kubevirt-ui-operator
+  links:
+  - name: kubevirt-ui-operator
+    url: https://github.com/kubevirt-ui/kubevirt-ui-operator
+  maintainers:
+  - email: kubevirt-ui@redhat.com
+    name: KubeVirt UI team
+  maturity: alpha
+  provider:
+    name: kubevirt-ui
+    url: https://github.com/kubevirt-ui
+  version: 0.0.0

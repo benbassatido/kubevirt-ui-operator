@@ -1,26 +1,26 @@
 # Helm chart ↔ operator parity matrix
 
-Track reconciliation parity between `helm/kubevirt-console-ui` templates and the operator controller. Update this table as operands land in Phase 1–2.
+Track reconciliation parity between `helm/kubevirt-console-ui` templates and the operator controller.
 
-| Helm template | Resource(s) | Operator (Phase) | Notes |
-|---------------|-------------|------------------|-------|
-| `namespace.yaml` | Namespace | TBD | `createNamespace` |
-| `priorityclass.yaml` | PriorityClass | TBD | Cluster-scoped |
-| `serviceaccount-plugin.yaml` | ServiceAccount | TBD | |
-| `serviceaccount-proxy.yaml` | ServiceAccount | TBD | |
-| `configmap-nginx.yaml` | ConfigMap | TBD | `nginx-conf` |
-| `configmap-user-settings.yaml` | ConfigMap | TBD | |
-| `configmap-ui-features.yaml` | ConfigMap | TBD | |
-| `deployment-plugin.yaml` | Deployment | TBD | SCC `restricted-v2` |
-| `deployment-proxy.yaml` | Deployment | TBD | |
-| `service-plugin.yaml` | Service | TBD | Serving cert annotation |
-| `service-proxy.yaml` | Service | TBD | Serving cert annotation |
-| `networkpolicy-plugin.yaml` | NetworkPolicy | TBD | Console ingress from `openshift-console` |
-| `networkpolicy-proxy.yaml` | NetworkPolicy | TBD | Egress to API |
-| `route-proxy.yaml` | Route | TBD | Optional |
-| `consoleplugin.yaml` | ConsolePlugin | TBD | `console.openshift.io` |
-| `console-register-plugin.yaml` | Console cluster patch | TBD | Helm hook today |
-| `role-config-reader.yaml` | Role | TBD | |
-| `rolebinding-config-reader.yaml` | RoleBinding | TBD | |
+| Helm template | Resource(s) | Operator | Notes |
+|---------------|-------------|----------|-------|
+| `namespace.yaml` | Namespace | No | Create namespace before applying the CR (`scripts/apply-sample-cr.sh`); operator does not create namespaces |
+| `priorityclass.yaml` | PriorityClass | Yes | Cluster-scoped, no owner ref |
+| `serviceaccount-plugin.yaml` | ServiceAccount | Yes | |
+| `serviceaccount-proxy.yaml` | ServiceAccount | Yes | |
+| `configmap-nginx.yaml` | ConfigMap | Yes | `nginx-conf` |
+| `configmap-user-settings.yaml` | ConfigMap | Yes | |
+| `configmap-ui-features.yaml` | ConfigMap | Yes | |
+| `deployment-plugin.yaml` | Deployment | Yes | SCC `restricted-v2` |
+| `deployment-proxy.yaml` | Deployment | Yes | |
+| `service-plugin.yaml` | Service | Yes | Serving cert annotation |
+| `service-proxy.yaml` | Service | Yes | Serving cert annotation |
+| `networkpolicy-plugin.yaml` | NetworkPolicy | Yes | When `networkPolicy.enabled` |
+| `networkpolicy-proxy.yaml` | NetworkPolicy | Yes | When `networkPolicy.enabled` |
+| `route-proxy.yaml` | Route | Yes | When `route.enabled` |
+| `consoleplugin.yaml` | ConsolePlugin | Yes | Cluster-scoped |
+| `console-register-plugin.yaml` | Console cluster patch | Partial | In-process patch (no Job/ClusterRole) |
+| `role-config-reader.yaml` | Role | Yes | |
+| `rolebinding-config-reader.yaml` | RoleBinding | Yes | |
 
-**Legend:** TBD → not implemented in operator yet.
+**Legend:** Partial → behavior differs from Helm or needs hardening (RBAC for registration, status checks).
