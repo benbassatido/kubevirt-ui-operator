@@ -47,6 +47,4 @@ jobs:
       - name: Build operator
         run: go build -o /dev/null ./cmd/...
       - name: Verify generated manifests
-        run: |
-          make manifests
-          git diff --exit-code config/crd/bases/ config/rbac/role.yaml
+        run: make verify-manifests

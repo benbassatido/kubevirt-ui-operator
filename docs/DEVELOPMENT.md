@@ -33,7 +33,8 @@ operator-sdk version
 
 ```bash
 make help
-make manifests   # CRD + RBAC from kubebuilder markers (needs controller-gen)
+make manifests        # CRD + RBAC from kubebuilder markers (needs controller-gen)
+make verify-manifests # same as CI: fails if config/crd/bases or role.yaml differ or are untracked
 make generate    # deepcopy (needs controller-gen)
 make test
 make build       # bin/manager

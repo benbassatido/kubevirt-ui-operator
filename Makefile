@@ -98,6 +98,17 @@ help: ## Display this help.
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
+MANIFEST_PATHS := config/crd/bases config/rbac/role.yaml
+
+.PHONY: verify-manifests
+verify-manifests: manifests ## Regenerate manifests; fail if CRD/RBAC outputs differ or are untracked.
+	@if [ -n "$$(git status --porcelain $(MANIFEST_PATHS))" ]; then \
+		echo "Generated manifests are missing from git or out of date (run make manifests and commit):"; \
+		git status --porcelain $(MANIFEST_PATHS); \
+		git diff -- $(MANIFEST_PATHS); \
+		exit 1; \
+	fi
+
 .PHONY: generate
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
