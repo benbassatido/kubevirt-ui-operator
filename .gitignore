@@ -21,3 +21,9 @@ vendor/
 # Kubebuilder / envtest
 .env
 .env.*
+bin/manager
+bundle/
+bundle.Dockerfile
+catalog/
+dist/
+cover.out

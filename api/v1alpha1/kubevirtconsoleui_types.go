@@ -5,17 +5,14 @@ import (
 )
 
 const (
-	ConditionTypeReady = "Ready"
+	ConditionTypeReady                   = "Ready"
+	ConditionTypeProgressing             = "Progressing"
+	ConditionTypeDegraded                = "Degraded"
+	ConditionTypePlatformRequirementsMet = "PlatformRequirementsMet"
 )
 
-// KubeVirtConsoleUISpec defines the desired console UI stack (Helm values parity).
+// KubeVirtConsoleUISpec defines the desired console UI stack (Helm parity). Operands are deployed in the CR's metadata.namespace.
 type KubeVirtConsoleUISpec struct {
-	// Namespace for UI operands (default openshift-cnv).
-	// +kubebuilder:default=openshift-cnv
-	Namespace string `json:"namespace,omitempty"`
-
-	CreateNamespace bool `json:"createNamespace,omitempty"`
-
 	HCOLabels HCOLabelsSpec `json:"hcoLabels,omitempty"`
 
 	PriorityClass PriorityClassSpec `json:"priorityClass,omitempty"`
@@ -45,7 +42,7 @@ type HCOLabelsSpec struct {
 	// +kubebuilder:default=hco-operator
 	ManagedBy string `json:"managedBy,omitempty"`
 	// +kubebuilder:default=hyperconverged-cluster
-	PartOf string `json:"partOf,omitempty"`
+	PartOf  string `json:"partOf,omitempty"`
 	Version string `json:"version,omitempty"`
 }
 
@@ -55,7 +52,7 @@ type PriorityClassSpec struct {
 	// +kubebuilder:default=kubevirt-cluster-critical
 	Name string `json:"name,omitempty"`
 	// +kubebuilder:default=1000000000
-	Value *int32 `json:"value,omitempty"`
+	Value       *int32 `json:"value,omitempty"`
 	Description string `json:"description,omitempty"`
 	// +kubebuilder:default=PreemptLowerPriority
 	PreemptionPolicy string `json:"preemptionPolicy,omitempty"`
@@ -89,9 +86,9 @@ type ProxySpec struct {
 	// +kubebuilder:default=kubevirt-apiserver-proxy-service
 	ServiceName string `json:"serviceName,omitempty"`
 	// +kubebuilder:default=console-proxy-serving-cert
-	ServingCertSecret string `json:"servingCertSecret,omitempty"`
-	PriorityClassName string `json:"priorityClassName,omitempty"`
-	TLSArgs []string `json:"tlsArgs,omitempty"`
+	ServingCertSecret string   `json:"servingCertSecret,omitempty"`
+	PriorityClassName string   `json:"priorityClassName,omitempty"`
+	TLSArgs           []string `json:"tlsArgs,omitempty"`
 }
 
 type ConsolePluginSpec struct {
@@ -109,8 +106,8 @@ type ConfigSpec struct {
 	// +kubebuilder:default=kubevirt-user-settings
 	UserSettingsConfigMapName string `json:"userSettingsConfigMapName,omitempty"`
 	// +kubebuilder:default=kubevirt-ui-features
-	FeaturesConfigMapName string `json:"featuresConfigMapName,omitempty"`
-	Features FeaturesSpec `json:"features,omitempty"`
+	FeaturesConfigMapName string       `json:"featuresConfigMapName,omitempty"`
+	Features              FeaturesSpec `json:"features,omitempty"`
 }
 
 type FeaturesSpec struct {
@@ -125,8 +122,8 @@ type FeaturesSpec struct {
 	NodePortAddress     string `json:"nodePortAddress,omitempty"`
 	// +kubebuilder:default="false"
 	NodePortEnabled string `json:"nodePortEnabled,omitempty"`
-	IPStackType                            string `json:"ipStackType,omitempty"`
-	HCOVersion                             string `json:"hcoVersion,omitempty"`
+	IPStackType     string `json:"ipStackType,omitempty"`
+	HCOVersion      string `json:"hcoVersion,omitempty"`
 }
 
 type ConsoleSpec struct {
@@ -170,7 +167,7 @@ type KubeVirtConsoleUIStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:shortName=kvui
 // +kubebuilder:printcolumn:name="Ready",type=string,JSONPath=`.status.conditions[?(@.type=="Ready")].status`
-// +kubebuilder:printcolumn:name="Namespace",type=string,JSONPath=`.spec.namespace`
+// +kubebuilder:printcolumn:name="Namespace",type=string,JSONPath=`.metadata.namespace`
 
 // KubeVirtConsoleUI deploys the KubeVirt OpenShift console plugin stack.
 type KubeVirtConsoleUI struct {

@@ -2,14 +2,14 @@
 
 Kubernetes operator and install assets for the **OpenShift Virtualization console UI** stack: the dynamic plugin, apiserver-proxy, UI configuration, and everything the cluster needs to run the KubeVirt UI **without** owning the virtualization backend (KubeVirt, CDI, CNAO, and the rest of the CNV/HCO operands).
 
-Today this repository ships a **Helm chart** that matches what the [HyperConverged Cluster Operator](https://github.com/kubevirt/hyperconverged-cluster-operator) reconciles for UI ([`kubevirtConsolePlugin.go`](https://github.com/kubevirt/hyperconverged-cluster-operator/blob/main/controllers/handlers/kubevirtConsolePlugin.go)). The **operator controller** will live here next and become the long-term way to install, upgrade, and reconcile those resources.
+Today this repository ships a **Helm chart** and an **alpha operator controller** (`main.go`, `controllers/`) that reconcile the same stack from a `KubeVirtConsoleUI` CR. The chart remains a supported bootstrap path; the CR is the long-term day-2 interface.
 
 ## Why this repo exists
 
 | Layer | Owned by | This repo |
 |-------|----------|-----------|
 | VM / storage / network control plane | CNV, HCO, KubeVirt, CDI, … | No |
-| Console plugin + proxy + UI config | Today: HCO when CNV is installed | **Yes** (Helm now, operator soon) |
+| Console plugin + proxy + UI config | Today: HCO when CNV is installed | **Yes** (Helm + operator CR) |
 | Plugin source (React) | [kubevirt-plugin](https://github.com/kubevirt-ui/kubevirt-plugin) | No (consumes published images) |
 | Proxy implementation | [kubevirt-apiserver-proxy](https://github.com/kubevirt-ui/kubevirt-apiserver-proxy) | No (consumes published images) |
 
@@ -32,23 +32,20 @@ The operator will **not** install virt-api, virt-controller, CDI, subscriptions,
 
 ```text
 kubevirt-ui-operator/
-├── README.md
-├── LICENSE
+├── cmd/main.go                 # Operator SDK manager entrypoint
+├── api/v1alpha1/               # KubeVirtConsoleUI CRD types
+├── controllers/                # Reconcile loop
+├── internal/                   # defaults, labels, manifests, platform checks
+├── config/                     # kustomize: crd, rbac, manager, OLM CSV/bundle
+├── Dockerfile
+├── Makefile                    # Operator SDK targets (build, deploy, bundle, …)
 ├── docs/
-│   ├── ROADMAP.md              # Operator delivery plan and prerequisites
-│   └── design/                 # API RFCs
-└── helm/
-    └── kubevirt-console-ui/    # Standalone Helm install (HCO-aligned manifests)
+│   ├── ROADMAP.md
+│   └── design/
+└── helm/kubevirt-console-ui/
 ```
 
-Planned additions (not in tree yet):
-
-```text
-├── api/                        # CRD(s) for UI deployment configuration
-├── controllers/                # Reconcile loop (parity with HCO UI handlers)
-├── config/                     # OLM bundle / kustomize / manager manifests
-└── hack/                       # Dev tooling
-```
+Planned additions: envtest/e2e on OpenShift, published operator image defaults, compatibility matrix.
 
 ## Quick start (Helm)
 

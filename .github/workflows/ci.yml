@@ -44,5 +44,9 @@ jobs:
           cache: true
       - name: Test
         run: go test ./...
-      - name: Validate CRD manifest
-        run: kubectl apply --dry-run=client -f config/crd/bases/
+      - name: Build operator
+        run: go build -o /dev/null ./cmd/...
+      - name: Verify generated manifests
+        run: |
+          make manifests
+          git diff --exit-code config/crd/bases/ config/rbac/role.yaml
