@@ -5,8 +5,8 @@
 ```bash
 helm lint ./helm/kubevirt-console-ui
 helm template kubevirt-ui ./helm/kubevirt-console-ui \
-  --set plugin.image=quay.io/kubevirt-ui/kubevirt-plugin:<tag> \
-  --set proxy.image=quay.io/kubevirt-ui/kubevirt-apiserver-proxy:<tag>
+  --set plugin.image=quay.io/kubevirtui/kubevirt-plugin:<tag> \
+  --set proxy.image=quay.io/kubevirtui/kubevirt-apiserver-proxy:<tag>
 ```
 
 Smoke install on OpenShift: see [helm/kubevirt-console-ui/README.md](../helm/kubevirt-console-ui/README.md).
@@ -106,7 +106,7 @@ make bundle VERSION=${VERSION} IMG=${IMG}
 make bundle-build bundle-push VERSION=${VERSION} BUNDLE_IMG=${BUNDLE_IMG}
 ```
 
-Use the same `VERSION`, `IMG`, and `BUNDLE_IMG` on every target. A second `make` without those variables falls back to `VERSION=0.0.1` and `quay.io/kubevirt-ui/kubevirt-ui-operator-bundle:v0.0.1`.
+Use the same `VERSION`, `IMG`, and `BUNDLE_IMG` on every target. A second `make` without those variables falls back to `VERSION=0.0.1` and `quay.io/kubevirtui/kubevirt-ui-operator-bundle:v0.0.1`.
 
 See [Operator SDK bundle tutorial](https://sdk.operatorframework.io/docs/olm-integration/tutorial-bundle/).
 
@@ -118,7 +118,7 @@ Workflow [`.github/workflows/operator-image.yaml`](../.github/workflows/operator
 
 | Trigger | Image tags pushed |
 |---------|-------------------|
-| **Git tag push** (`v*`, e.g. `v0.1.0`) | `quay.io/kubevirt-ui/kubevirt-ui-operator:<tag>` |
+| **Git tag push** (`v*`, e.g. `v0.1.0`) | `quay.io/kubevirtui/kubevirt-ui-operator:<tag>` |
 | **Push to `main`** | `latest`, `sha-<short>` |
 | **Pull request** (same-repo only) | `pr-<number>` (multi-arch); fork PRs build only, no push |
 
@@ -132,7 +132,7 @@ Repository secrets required for publish (Quay robot account):
 Deploy the published manager to a cluster:
 
 ```bash
-export IMG=quay.io/kubevirt-ui/kubevirt-ui-operator:latest
+export IMG=quay.io/kubevirtui/kubevirt-ui-operator:latest
 # git tag v0.1.0 && git push origin v0.1.0  →  :v0.1.0  |  PR: :pr-<n>  |  main: :latest or :sha-<short>
 make deploy
 ```

@@ -3,8 +3,8 @@ package defaults
 import consoleuiv1alpha1 "github.com/kubevirt-ui/kubevirt-ui-operator/api/v1alpha1"
 
 const (
-	defaultPluginImage = "quay.io/kubevirt-ui/kubevirt-plugin:latest"
-	defaultProxyImage  = "quay.io/kubevirt-ui/kubevirt-apiserver-proxy:latest"
+	defaultPluginImage = "quay.io/kubevirtui/kubevirt-plugin:latest"
+	defaultProxyImage  = "quay.io/kubevirtui/kubevirt-apiserver-proxy:latest"
 )
 
 // Apply fills unset fields to match helm/kubevirt-console-ui/values.yaml.

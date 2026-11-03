@@ -131,7 +131,7 @@ spec:
               plugin:
                 properties:
                   image:
-                    default: quay.io/kubevirt-ui/kubevirt-plugin:latest
+                    default: quay.io/kubevirtui/kubevirt-plugin:latest
                     type: string
                   name:
                     default: kubevirt-console-plugin
@@ -174,7 +174,7 @@ spec:
               proxy:
                 properties:
                   image:
-                    default: quay.io/kubevirt-ui/kubevirt-apiserver-proxy:latest
+                    default: quay.io/kubevirtui/kubevirt-apiserver-proxy:latest
                     type: string
                   name:
                     default: kubevirt-apiserver-proxy
