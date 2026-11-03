@@ -121,7 +121,7 @@ Workflow [`.github/workflows/operator-image.yaml`](../.github/workflows/operator
 | Pull request | `docker build` only (validates the Dockerfile) |
 | Push to `main` | Build and **push** to `quay.io/kubevirt-ui/kubevirt-ui-operator` |
 
-Tags on `main`: `main`, `latest`, and `sha-<short>`.
+Tags on `main`: `main`, `latest`, and `sha-<short>`. Images are **multi-arch** manifests for `linux/amd64`, `linux/arm64`, and `linux/s390x` (PR CI builds each platform separately; publish pushes one manifest list).
 
 Repository secrets required for publish (Quay robot account):
 

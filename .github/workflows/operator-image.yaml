@@ -11,18 +11,29 @@ on:
 
 env:
   IMAGE: quay.io/kubevirt-ui/kubevirt-ui-operator
+  PLATFORMS: linux/amd64,linux/arm64,linux/s390x
 
 permissions:
   contents: read
 
 jobs:
   build:
-    name: build
+    name: build (${{ matrix.platform }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - linux/amd64
+          - linux/arm64
+          - linux/s390x
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -32,10 +43,11 @@ jobs:
         with:
           context: .
           file: Dockerfile
+          platforms: ${{ matrix.platform }}
           push: false
           tags: ${{ env.IMAGE }}:ci
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ matrix.platform }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.platform }}
 
   publish:
     name: publish
@@ -46,6 +58,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -67,11 +82,12 @@ jobs:
             type=raw,value=latest
             type=sha,format=short,prefix=sha-
 
-      - name: Build and push
+      - name: Build and push multi-arch manifest
         uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile
+          platforms: ${{ env.PLATFORMS }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
