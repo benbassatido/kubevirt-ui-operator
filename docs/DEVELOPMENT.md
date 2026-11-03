@@ -116,12 +116,13 @@ The reconciler sets `PlatformRequirementsMet` when OpenShift console APIs are av
 
 Workflow [`.github/workflows/operator-image.yaml`](../.github/workflows/operator-image.yaml):
 
-| Event | Behavior |
-|-------|----------|
-| Pull request | `docker build` only (validates the Dockerfile) |
-| Push to `main` | Build and **push** to `quay.io/kubevirt-ui/kubevirt-ui-operator` |
+| Event | Image tags pushed |
+|-------|-------------------|
+| **GitHub Release** (published) | `quay.io/kubevirt-ui/kubevirt-ui-operator:<release tag name>` (e.g. `v0.1.0`) |
+| **Push to `main`** | `latest`, `sha-<short>` |
+| **Pull request** (same-repo only) | `pr-<number>` (multi-arch); fork PRs build in CI but do not push |
 
-Tags on `main`: `main`, `latest`, and `sha-<short>`. Images are **multi-arch** manifests for `linux/amd64`, `linux/arm64`, and `linux/s390x` (PR CI builds each platform separately; publish pushes one manifest list).
+Workflow [`.github/workflows/operator-image.yaml`](../.github/workflows/operator-image.yaml) builds `linux/amd64`, `linux/arm64`, and `linux/s390x`.
 
 Repository secrets required for publish (Quay robot account):
 
@@ -131,8 +132,8 @@ Repository secrets required for publish (Quay robot account):
 Deploy the published manager to a cluster:
 
 ```bash
-export IMG=quay.io/kubevirt-ui/kubevirt-ui-operator:sha-$(git rev-parse --short HEAD)
-# or :main / :latest after a main-branch publish
+export IMG=quay.io/kubevirt-ui/kubevirt-ui-operator:latest
+# release: :v0.1.0  |  PR (same repo): :pr-<number>  |  main: :latest or :sha-<short>
 make deploy
 ```
 
