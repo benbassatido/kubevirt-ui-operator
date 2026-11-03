@@ -26,7 +26,9 @@ func (r *KubeVirtConsoleUIReconciler) updateStatusAndRequeue(
 	reconcileErr error,
 ) (ctrl.Result, error) {
 	status.ReadyFromOperands(&cr.Status.Conditions, reconcileErr)
-	cr.Status.ObservedGeneration = cr.Generation
+	if reconcileErr == nil {
+		cr.Status.ObservedGeneration = cr.Generation
+	}
 
 	if err := r.Status().Update(ctx, cr); err != nil {
 		return ctrl.Result{}, err

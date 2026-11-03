@@ -10,8 +10,13 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 
 	routev1 "github.com/openshift/api/route/v1"
+
+	consolev1 "github.com/openshift/api/console/v1"
+	operatorv1 "github.com/openshift/api/operator/v1"
+	schedulingv1 "k8s.io/api/scheduling/v1"
 
 	consoleuiv1alpha1 "github.com/kubevirt-ui/kubevirt-ui-operator/api/v1alpha1"
 	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/manifests"
@@ -57,5 +62,17 @@ func (r *KubeVirtConsoleUIReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&rbacv1.RoleBinding{}).
 		Owns(&networkingv1.NetworkPolicy{}).
 		Owns(&routev1.Route{}).
+		Watches(
+			&consolev1.ConsolePlugin{},
+			handler.EnqueueRequestsFromMapFunc(r.mapConsolePluginToRequests),
+		).
+		Watches(
+			&schedulingv1.PriorityClass{},
+			handler.EnqueueRequestsFromMapFunc(r.mapPriorityClassToRequests),
+		).
+		Watches(
+			&operatorv1.Console{},
+			handler.EnqueueRequestsFromMapFunc(r.mapConsoleToRequests),
+		).
 		Complete(r)
 }
