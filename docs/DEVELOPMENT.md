@@ -112,6 +112,30 @@ See [Operator SDK bundle tutorial](https://sdk.operatorframework.io/docs/olm-int
 
 The reconciler sets `PlatformRequirementsMet` when OpenShift console APIs are available, then reconciles UI operands. With `spec.console.registerPlugin: true`, the manager patches `consoles.operator.openshift.io/cluster` (requires ClusterRole rules on the operator SA).
 
+### CI: operator image
+
+Workflow [`.github/workflows/operator-image.yaml`](../.github/workflows/operator-image.yaml):
+
+| Event | Behavior |
+|-------|----------|
+| Pull request | `docker build` only (validates the Dockerfile) |
+| Push to `main` | Build and **push** to `quay.io/kubevirt-ui/kubevirt-ui-operator` |
+
+Tags on `main`: `main`, `latest`, and `sha-<short>`.
+
+Repository secrets required for publish (Quay robot account):
+
+- `QUAY_USERNAME`
+- `QUAY_PASSWORD`
+
+Deploy the published manager to a cluster:
+
+```bash
+export IMG=quay.io/kubevirt-ui/kubevirt-ui-operator:sha-$(git rev-parse --short HEAD)
+# or :main / :latest after a main-branch publish
+make deploy
+```
+
 ## Cluster prerequisites
 
 Console and cluster requirements: [ROADMAP.md — Prerequisites](ROADMAP.md#prerequisites-cluster-and-console).
