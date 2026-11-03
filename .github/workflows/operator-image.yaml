@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE: quay.io/kubevirt-ui/kubevirt-ui-operator
+  IMAGE: quay.io/kubevirtui/kubevirt-ui-operator
   PLATFORMS: linux/amd64,linux/arm64,linux/s390x
 
 permissions:

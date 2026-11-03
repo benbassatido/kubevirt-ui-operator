@@ -44,8 +44,8 @@ Full list: [docs/ROADMAP.md#prerequisites-cluster-and-console](../../docs/ROADMA
 ```bash
 helm upgrade --install kubevirt-ui ./helm/kubevirt-console-ui \
   --namespace openshift-cnv \
-  --set plugin.image=quay.io/kubevirt-ui/kubevirt-plugin:<tag> \
-  --set proxy.image=quay.io/kubevirt-ui/kubevirt-apiserver-proxy:<tag>
+  --set plugin.image=quay.io/kubevirtui/kubevirt-plugin:<tag> \
+  --set proxy.image=quay.io/kubevirtui/kubevirt-apiserver-proxy:<tag>
 ```
 
 Pin images to the same versions shipped with your CNV release (see HCO `deploy/images.env`: `KUBEVIRT_CONSOLE_PLUGIN_IMAGE`, `KUBEVIRT_CONSOLE_PROXY_IMAGE`).

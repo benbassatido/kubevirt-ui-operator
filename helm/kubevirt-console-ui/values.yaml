@@ -21,7 +21,7 @@ priorityClass:
 
 plugin:
   name: kubevirt-console-plugin
-  image: quay.io/kubevirt-ui/kubevirt-plugin:latest
+  image: quay.io/kubevirtui/kubevirt-plugin:latest
   port: 9443
   replicas: 1
   serviceName: kubevirt-console-plugin-service
@@ -30,7 +30,7 @@ plugin:
 
 proxy:
   name: kubevirt-apiserver-proxy
-  image: quay.io/kubevirt-ui/kubevirt-apiserver-proxy:latest
+  image: quay.io/kubevirtui/kubevirt-apiserver-proxy:latest
   port: 8080
   replicas: 1
   serviceName: kubevirt-apiserver-proxy-service

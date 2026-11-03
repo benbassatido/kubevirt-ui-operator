@@ -125,7 +125,7 @@ Unblock parallel contributions before the controller is large.
 | Security | Minimal operator RBAC; NetworkPolicy defaults documented; SCC `restricted-v2` |
 | TLS | Serving certs; optional proxy `tlsArgs` aligned with cluster TLS profile |
 | Observability | Structured logs, controller metrics; runbook for common failures |
-| Release | `quay.io/kubevirt-ui/kubevirt-ui-operator` semver tags, changelog |
+| Release | `quay.io/kubevirtui/kubevirt-ui-operator` semver tags, changelog |
 | Compatibility | [docs/COMPATIBILITY.md](COMPATIBILITY.md) — OpenShift versions, plugin/proxy pins |
 
 **Exit:** `docs/RUNBOOK.md` covers console plugin not listed, NP blocking console traffic, serving cert not ready.

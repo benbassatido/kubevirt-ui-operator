@@ -62,8 +62,8 @@ Full prerequisite list: [docs/ROADMAP.md#prerequisites-cluster-and-console](docs
 helm upgrade --install kubevirt-ui ./helm/kubevirt-console-ui \
   --namespace openshift-cnv \
   --create-namespace \
-  --set plugin.image=quay.io/kubevirt-ui/kubevirt-plugin:<tag> \
-  --set proxy.image=quay.io/kubevirt-ui/kubevirt-apiserver-proxy:<tag>
+  --set plugin.image=quay.io/kubevirtui/kubevirt-plugin:<tag> \
+  --set proxy.image=quay.io/kubevirtui/kubevirt-apiserver-proxy:<tag>
 ```
 
 Image references used by HCO are defined in [`deploy/images.env`](https://github.com/kubevirt/hyperconverged-cluster-operator/blob/main/deploy/images.env) (`KUBEVIRT_CONSOLE_PLUGIN_IMAGE`, `KUBEVIRT_CONSOLE_PROXY_IMAGE`).

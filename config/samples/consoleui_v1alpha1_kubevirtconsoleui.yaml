@@ -5,6 +5,6 @@ metadata:
   namespace: openshift-cnv
 spec:
   plugin:
-    image: quay.io/kubevirt-ui/kubevirt-plugin:latest
+    image: quay.io/kubevirtui/kubevirt-plugin:latest
   proxy:
-    image: quay.io/kubevirt-ui/kubevirt-apiserver-proxy:latest
+    image: quay.io/kubevirtui/kubevirt-apiserver-proxy:latest
