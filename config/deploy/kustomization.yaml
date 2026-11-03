@@ -1,0 +1,4 @@
+# Full operator install (namespace + config/default). Undeploy uses config/default only so openshift-cnv is preserved.
+resources:
+- ../namespace
+- ../default

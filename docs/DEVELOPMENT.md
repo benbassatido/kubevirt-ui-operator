@@ -63,11 +63,13 @@ Create the operand namespace before applying the CR (`scripts/apply-sample-cr.sh
 make install     # CRD only (kustomize config/crd)
 export IMG=quay.io/<your-user>/kubevirt-ui-operator:dev
 make docker-build docker-push
-make deploy      # manager Deployment, RBAC, SA in openshift-cnv (same namespace convention as HCO)
+make deploy      # openshift-cnv Namespace (if missing), manager Deployment, RBAC, SA
 ./scripts/apply-sample-cr.sh
 ```
 
-`make deploy` creates or uses **`openshift-cnv`** for the controller manager (not a separate `*-system` namespace). That matches where HCO runs on CNV clusters. The sample CR may still use another namespace (e.g. `openshift-cnv-test`) for an isolated UI stack; the manager watches `KubeVirtConsoleUI` in all namespaces. Do not install UI operands on top of an existing HCO-managed stack in the same namespace.
+`make deploy` applies **`config/deploy`**, which includes the **`openshift-cnv`** namespace (harmless if HCO already created it). **`make undeploy`** applies only **`config/default`**, so it removes operator resources but **does not delete** the namespace—safe on shared CNV clusters.
+
+The manager runs in **`openshift-cnv`** (HCO convention). The sample CR may use another namespace (e.g. `openshift-cnv-test`) for an isolated UI stack. Do not install UI operands on top of an existing HCO-managed stack in the same namespace.
 
 Or manually:
 
@@ -80,19 +82,25 @@ kubectl apply -f config/samples/consoleui_v1alpha1_kubevirtconsoleui.yaml
 
 If `make deploy` fails building `controller-gen`, ensure Go 1.22+ and use the Makefile’s pinned `CONTROLLER_TOOLS_VERSION` (v0.16.5), or install `controller-gen` on your `PATH`.
 
-Undeploy:
+Undeploy (does **not** delete the `openshift-cnv` namespace):
 
 ```bash
-make undeploy
+make undeploy    # operator Deployment, RBAC, etc. in openshift-cnv only
 make uninstall   # remove CRD
 ```
 
 ### OLM bundle (optional)
 
 ```bash
-make bundle VERSION=0.1.0
-make bundle-build bundle-push   # after setting IMG and registry auth
+VERSION=0.1.0
+IMG=quay.io/<your-user>/kubevirt-ui-operator:v${VERSION}
+BUNDLE_IMG=quay.io/<your-user>/kubevirt-ui-operator-bundle:v${VERSION}
+
+make bundle VERSION=${VERSION} IMG=${IMG}
+make bundle-build bundle-push VERSION=${VERSION} BUNDLE_IMG=${BUNDLE_IMG}
 ```
+
+Use the same `VERSION`, `IMG`, and `BUNDLE_IMG` on every target. A second `make` without those variables falls back to `VERSION=0.0.1` and `quay.io/kubevirt-ui/kubevirt-ui-operator-bundle:v0.0.1`.
 
 See [Operator SDK bundle tutorial](https://sdk.operatorframework.io/docs/olm-integration/tutorial-bundle/).
 

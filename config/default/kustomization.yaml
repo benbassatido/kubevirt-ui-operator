@@ -1,4 +1,4 @@
-# Operand namespace on OpenShift Virtualization (HCO installs the CNV operator and UI stack here).
+# Operator manager namespace (HCO convention on CNV). Created on make deploy via config/namespace; not deleted on undeploy.
 namespace: openshift-cnv
 
 # Value of this field is prepended to the
