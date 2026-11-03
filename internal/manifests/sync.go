@@ -16,58 +16,59 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	consoleuiv1alpha1 "github.com/kubevirt-ui/kubevirt-ui-operator/api/v1alpha1"
+	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/manifests/builders"
 )
 
 // ReconcileStack applies Helm-parity operands for the effective spec in Context.
 func ReconcileStack(ctx context.Context, c client.Client, scheme *runtime.Scheme, m *Context) error {
-	if pc := PriorityClass(m); pc != nil {
-		if err := reconcileCluster(ctx, c, func() client.Object { return PriorityClass(m) }); err != nil {
+	if pc := builders.PriorityClass(m); pc != nil {
+		if err := reconcileCluster(ctx, c, func() client.Object { return builders.PriorityClass(m) }); err != nil {
 			return err
 		}
 	}
 
 	steps := []func() error{
 		func() error {
-			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return pluginServiceAccount(m) })
+			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.PluginServiceAccount(m) })
 		},
 		func() error {
-			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return proxyServiceAccount(m) })
+			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.ProxyServiceAccount(m) })
 		},
 		func() error {
-			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return nginxConfigMap(m) })
+			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.NginxConfigMap(m) })
 		},
 		func() error {
-			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return userSettingsConfigMap(m) })
+			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.UserSettingsConfigMap(m) })
 		},
 		func() error {
-			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return featuresConfigMap(m) })
+			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.FeaturesConfigMap(m) })
 		},
 		func() error {
-			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return pluginDeployment(m) })
+			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.PluginDeployment(m) })
 		},
 		func() error {
-			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return proxyDeployment(m) })
+			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.ProxyDeployment(m) })
 		},
 		func() error {
-			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return pluginService(m) })
+			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.PluginService(m) })
 		},
 		func() error {
-			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return proxyService(m) })
+			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.ProxyService(m) })
 		},
 		func() error {
-			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return configReaderRole(m) })
+			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.ConfigReaderRole(m) })
 		},
 		func() error {
-			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return configReaderRoleBinding(m) })
+			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.ConfigReaderRoleBinding(m) })
 		},
 	}
 	if consoleuiv1alpha1.BoolOrDefault(m.Spec.NetworkPolicy.Enabled, true) {
 		steps = append(steps,
 			func() error {
-				return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return pluginNetworkPolicy(m) })
+				return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.PluginNetworkPolicy(m) })
 			},
 			func() error {
-				return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return proxyNetworkPolicy(m) })
+				return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.ProxyNetworkPolicy(m) })
 			},
 		)
 	} else {
@@ -82,7 +83,7 @@ func ReconcileStack(ctx context.Context, c client.Client, scheme *runtime.Scheme
 	}
 	if consoleuiv1alpha1.BoolOrDefault(m.Spec.Route.Enabled, true) {
 		steps = append(steps, func() error {
-			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return proxyRoute(m) })
+			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.ProxyRoute(m) })
 		})
 	} else {
 		steps = append(steps, func() error {
@@ -91,7 +92,7 @@ func ReconcileStack(ctx context.Context, c client.Client, scheme *runtime.Scheme
 	}
 
 	steps = append(steps, func() error {
-		return reconcileCluster(ctx, c, func() client.Object { return consolePlugin(m) })
+		return reconcileCluster(ctx, c, func() client.Object { return builders.ConsolePlugin(m) })
 	})
 
 	for _, step := range steps {
