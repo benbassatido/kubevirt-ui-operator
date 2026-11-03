@@ -116,13 +116,13 @@ The reconciler sets `PlatformRequirementsMet` when OpenShift console APIs are av
 
 Workflow [`.github/workflows/operator-image.yaml`](../.github/workflows/operator-image.yaml):
 
-| Event | Image tags pushed |
-|-------|-------------------|
-| **GitHub Release** (published) | `quay.io/kubevirt-ui/kubevirt-ui-operator:<release tag name>` (e.g. `v0.1.0`) |
+| Trigger | Image tags pushed |
+|---------|-------------------|
+| **Git tag push** (`v*`, e.g. `v0.1.0`) | `quay.io/kubevirt-ui/kubevirt-ui-operator:<tag>` |
 | **Push to `main`** | `latest`, `sha-<short>` |
-| **Pull request** (same-repo only) | `pr-<number>` (multi-arch); fork PRs build in CI but do not push |
+| **Pull request** (same-repo only) | `pr-<number>` (multi-arch); fork PRs build only, no push |
 
-Workflow [`.github/workflows/operator-image.yaml`](../.github/workflows/operator-image.yaml) builds `linux/amd64`, `linux/arm64`, and `linux/s390x`.
+Multi-arch: `linux/amd64`, `linux/arm64`, `linux/s390x`.
 
 Repository secrets required for publish (Quay robot account):
 
@@ -133,7 +133,7 @@ Deploy the published manager to a cluster:
 
 ```bash
 export IMG=quay.io/kubevirt-ui/kubevirt-ui-operator:latest
-# release: :v0.1.0  |  PR (same repo): :pr-<number>  |  main: :latest or :sha-<short>
+# git tag v0.1.0 && git push origin v0.1.0  →  :v0.1.0  |  PR: :pr-<n>  |  main: :latest or :sha-<short>
 make deploy
 ```
 
