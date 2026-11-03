@@ -20,6 +20,7 @@ import (
 
 	consoleuiv1alpha1 "github.com/kubevirt-ui/kubevirt-ui-operator/api/v1alpha1"
 	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/manifests"
+	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/status"
 )
 
 // KubeVirtConsoleUIReconciler reconciles the console UI stack for a KubeVirtConsoleUI CR.
@@ -47,8 +48,14 @@ func (r *KubeVirtConsoleUIReconciler) Reconcile(ctx context.Context, req ctrl.Re
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	reconcileErr := r.reconcile(ctx, cr, manifests.NewContext(cr))
-	return r.updateStatusAndRequeue(ctx, cr, reconcileErr)
+	mctx := manifests.NewContext(cr)
+	reconcileErr := r.reconcile(ctx, cr, mctx)
+	deploymentsWaiting := ""
+	if reconcileErr == nil {
+		deploymentsWaiting = status.OperandDeploymentsWaiting(ctx, r.Client,
+			mctx.OperandNamespace, mctx.Spec.Plugin.Name, mctx.Spec.Proxy.Name)
+	}
+	return r.updateStatusAndRequeue(ctx, cr, reconcileErr, deploymentsWaiting)
 }
 
 func (r *KubeVirtConsoleUIReconciler) SetupWithManager(mgr ctrl.Manager) error {

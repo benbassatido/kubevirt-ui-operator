@@ -29,12 +29,18 @@ func SetCondition(conditions *[]metav1.Condition, conditionType string, status m
 	})
 }
 
-// ReadyFromOperands sets Ready/Progressing/Degraded from operand reconciliation outcome.
-func ReadyFromOperands(conditions *[]metav1.Condition, err error) {
-	if err != nil {
+// ReadyFromOperands sets Ready/Progressing/Degraded from operand reconciliation and Deployment availability.
+func ReadyFromOperands(conditions *[]metav1.Condition, reconcileErr error, deploymentsWaiting string) {
+	if reconcileErr != nil {
 		SetCondition(conditions, consoleuiv1alpha1.ConditionTypeProgressing, metav1.ConditionTrue, "Reconciling", "Applying console UI operands")
-		SetCondition(conditions, consoleuiv1alpha1.ConditionTypeDegraded, metav1.ConditionTrue, "ReconcileFailed", err.Error())
-		SetCondition(conditions, consoleuiv1alpha1.ConditionTypeReady, metav1.ConditionFalse, "ReconcileFailed", err.Error())
+		SetCondition(conditions, consoleuiv1alpha1.ConditionTypeDegraded, metav1.ConditionTrue, "ReconcileFailed", reconcileErr.Error())
+		SetCondition(conditions, consoleuiv1alpha1.ConditionTypeReady, metav1.ConditionFalse, "ReconcileFailed", reconcileErr.Error())
+		return
+	}
+	if deploymentsWaiting != "" {
+		SetCondition(conditions, consoleuiv1alpha1.ConditionTypeProgressing, metav1.ConditionTrue, "WaitingForOperands", deploymentsWaiting)
+		SetCondition(conditions, consoleuiv1alpha1.ConditionTypeDegraded, metav1.ConditionFalse, "Reconciled", "Operands applied; waiting for Deployments")
+		SetCondition(conditions, consoleuiv1alpha1.ConditionTypeReady, metav1.ConditionFalse, "DeploymentsNotAvailable", deploymentsWaiting)
 		return
 	}
 	SetCondition(conditions, consoleuiv1alpha1.ConditionTypeProgressing, metav1.ConditionFalse, "Reconciled", "Operands are up to date")

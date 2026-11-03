@@ -24,8 +24,9 @@ func (r *KubeVirtConsoleUIReconciler) updateStatusAndRequeue(
 	ctx context.Context,
 	cr *consoleuiv1alpha1.KubeVirtConsoleUI,
 	reconcileErr error,
+	deploymentsWaiting string,
 ) (ctrl.Result, error) {
-	status.ReadyFromOperands(&cr.Status.Conditions, reconcileErr)
+	status.ReadyFromOperands(&cr.Status.Conditions, reconcileErr, deploymentsWaiting)
 	if reconcileErr == nil {
 		cr.Status.ObservedGeneration = cr.Generation
 	}
@@ -33,8 +34,8 @@ func (r *KubeVirtConsoleUIReconciler) updateStatusAndRequeue(
 	if err := r.Status().Update(ctx, cr); err != nil {
 		return ctrl.Result{}, err
 	}
-	if reconcileErr != nil {
-		return ctrl.Result{RequeueAfter: defaultRequeue}, nil //nolint:nilerr // failure is in status; backoff via RequeueAfter
+	if reconcileErr != nil || deploymentsWaiting != "" {
+		return ctrl.Result{RequeueAfter: defaultRequeue}, nil //nolint:nilerr // failure/waiting reflected in status
 	}
 	return ctrl.Result{}, nil
 }
