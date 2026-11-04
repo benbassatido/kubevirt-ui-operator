@@ -99,6 +99,7 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
 MANIFEST_PATHS := config/crd/bases config/rbac/role.yaml
+GENERATE_PATHS := api/v1alpha1/zz_generated.deepcopy.go
 
 .PHONY: verify-manifests
 verify-manifests: manifests ## Regenerate manifests; fail if CRD/RBAC outputs differ or are untracked.
@@ -113,6 +114,15 @@ verify-manifests: manifests ## Regenerate manifests; fail if CRD/RBAC outputs di
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 
+.PHONY: verify-generate
+verify-generate: generate ## Regenerate deepcopy; fail if output differs or is untracked.
+	@if [ -n "$$(git status --porcelain $(GENERATE_PATHS))" ]; then \
+		echo "Generated code is missing from git or out of date (run make generate and commit):"; \
+		git status --porcelain $(GENERATE_PATHS); \
+		git diff -- $(GENERATE_PATHS); \
+		exit 1; \
+	fi
+
 .PHONY: fmt
 fmt: ## Run go fmt against code.
 	go fmt ./...
@@ -125,10 +135,10 @@ vet: ## Run go vet against code.
 test: manifests generate fmt vet envtest ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test $$(go list ./... | grep -v /e2e) -coverprofile cover.out
 
-# Utilize Kind or modify the e2e tests to load the image locally, enabling compatibility with other vendors.
-.PHONY: test-e2e  # Run the e2e tests against a Kind k8s instance that is spun up.
-test-e2e:
-	go test ./test/e2e/ -v -ginkgo.v
+.PHONY: test-e2e
+test-e2e: ## Placeholder until OpenShift e2e lands (see docs/ROADMAP.md Phase 2).
+	@echo "e2e tests are not implemented yet"
+	@exit 1
 
 .PHONY: lint
 lint: golangci-lint ## Run golangci-lint linter

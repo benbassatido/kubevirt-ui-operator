@@ -35,10 +35,12 @@ operator-sdk version
 make help
 make manifests        # CRD + RBAC from kubebuilder markers (needs controller-gen)
 make verify-manifests # same as CI: fails if config/crd/bases or role.yaml differ or are untracked
-make generate    # deepcopy (needs controller-gen)
+make generate         # deepcopy (needs controller-gen)
+make verify-generate  # same as CI: fails if zz_generated.deepcopy.go differs
+make lint             # golangci-lint (see .golangci.yml)
 make test
 make build       # bin/manager
-make run         # controller against current kubeconfig (uses your user RBAC)
+make run         # controller against current kubeconfig (uses your user RBAC); add --zap-devel for debug logs
 ```
 
 Install the CRD, create sample namespaces, run the controller, then apply the sample:
