@@ -9,8 +9,10 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	routev1 "github.com/openshift/api/route/v1"
 
@@ -20,6 +22,7 @@ import (
 
 	consoleuiv1alpha1 "github.com/kubevirt-ui/kubevirt-ui-operator/api/v1alpha1"
 	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/manifests"
+	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/operconfig"
 	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/status"
 )
 
@@ -27,6 +30,7 @@ import (
 type KubeVirtConsoleUIReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
+	Config operconfig.Config
 }
 
 // +kubebuilder:rbac:groups=consoleui.kubevirt.io,resources=kubevirtconsoleuis,verbs=get;list;watch;create;update;patch;delete
@@ -43,6 +47,10 @@ type KubeVirtConsoleUIReconciler struct {
 // +kubebuilder:rbac:groups=apiextensions.k8s.io,resources=customresourcedefinitions,verbs=get;list;watch
 
 func (r *KubeVirtConsoleUIReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	if req.Namespace != r.Config.OperandNamespace {
+		return ctrl.Result{}, nil
+	}
+
 	cr := &consoleuiv1alpha1.KubeVirtConsoleUI{}
 	if err := r.Get(ctx, req.NamespacedName, cr); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
@@ -59,16 +67,21 @@ func (r *KubeVirtConsoleUIReconciler) Reconcile(ctx context.Context, req ctrl.Re
 }
 
 func (r *KubeVirtConsoleUIReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	operandNS := r.Config.OperandNamespace
+	inOperandNS := builder.WithPredicates(predicate.NewPredicateFuncs(func(o client.Object) bool {
+		return o.GetNamespace() == operandNS
+	}))
+
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&consoleuiv1alpha1.KubeVirtConsoleUI{}).
-		Owns(&appsv1.Deployment{}).
-		Owns(&corev1.Service{}).
-		Owns(&corev1.ConfigMap{}).
-		Owns(&corev1.ServiceAccount{}).
-		Owns(&rbacv1.Role{}).
-		Owns(&rbacv1.RoleBinding{}).
-		Owns(&networkingv1.NetworkPolicy{}).
-		Owns(&routev1.Route{}).
+		For(&consoleuiv1alpha1.KubeVirtConsoleUI{}, inOperandNS).
+		Owns(&appsv1.Deployment{}, inOperandNS).
+		Owns(&corev1.Service{}, inOperandNS).
+		Owns(&corev1.ConfigMap{}, inOperandNS).
+		Owns(&corev1.ServiceAccount{}, inOperandNS).
+		Owns(&rbacv1.Role{}, inOperandNS).
+		Owns(&rbacv1.RoleBinding{}, inOperandNS).
+		Owns(&networkingv1.NetworkPolicy{}, inOperandNS).
+		Owns(&routev1.Route{}, inOperandNS).
 		Watches(
 			&consolev1.ConsolePlugin{},
 			handler.EnqueueRequestsFromMapFunc(r.mapConsolePluginToRequests),

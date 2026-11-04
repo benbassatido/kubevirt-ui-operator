@@ -56,6 +56,9 @@ spec:
           - --health-probe-bind-address=:8081
         image: controller:latest
         name: manager
+        env:
+        - name: OPERAND_NAMESPACE
+          value: kubevirt-ui
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
