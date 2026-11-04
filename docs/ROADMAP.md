@@ -37,7 +37,7 @@ Install and development assume an **OpenShift** (or OpenShift-compatible) cluste
 
 ### Tooling (developers)
 
-- `kubectl` / `oc`, Go 1.22+ (when operator lands), Helm 3, `make`, container build tooling for operator image.
+- `kubectl` / `oc`, Go 1.27+ (when operator lands), Helm 3, `make`, container build tooling for operator image.
 - For local controller development: cluster with CRD install permissions (`make install`) or a shared dev cluster.
 
 See also: [Helm chart prerequisites](../helm/kubevirt-console-ui/README.md#prerequisites) and [TLS vs NetworkPolicy](../helm/kubevirt-console-ui/README.md#tls-and-networkpolicy).
@@ -46,8 +46,10 @@ See also: [Helm chart prerequisites](../helm/kubevirt-console-ui/README.md#prere
 
 | In tree | Not in tree yet |
 |---------|-----------------|
-| Helm chart `helm/kubevirt-console-ui/` | Go operator, CI, OLM bundle |
-| Root and chart README | CONTRIBUTING, OWNERS, design RFCs, e2e |
+| Helm chart `helm/kubevirt-console-ui/` | OLM bundle in repo, OpenShift e2e in CI |
+| Go operator (`cmd/`, `controllers/`, `config/`) | Validating webhook, delete finalizers |
+| GHA: Helm lint/template, `make test`, `make lint`, verify manifests/generate | Published compatibility matrix per release |
+| `CONTRIBUTING.md`, `OWNERS`, design RFCs, operator image workflow | |
 
 **In-org references:**
 

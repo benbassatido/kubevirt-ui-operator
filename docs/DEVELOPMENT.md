@@ -35,10 +35,12 @@ operator-sdk version
 make help
 make manifests        # CRD + RBAC from kubebuilder markers (needs controller-gen)
 make verify-manifests # same as CI: fails if config/crd/bases or role.yaml differ or are untracked
-make generate    # deepcopy (needs controller-gen)
+make generate         # deepcopy (needs controller-gen)
+make verify-generate  # same as CI: fails if zz_generated.deepcopy.go differs
+make lint             # golangci-lint (see .golangci.yml)
 make test
 make build       # bin/manager
-make run         # controller against current kubeconfig (uses your user RBAC)
+make run         # controller against current kubeconfig (uses your user RBAC); add --zap-devel for debug logs
 ```
 
 Install the CRD, create sample namespaces, run the controller, then apply the sample:
@@ -81,7 +83,7 @@ kubectl apply -f config/samples/consoleui_v1alpha1_kubevirtconsoleui.yaml
 
 `make deploy` runs `kustomize edit set image` under `config/manager/` (local change to that file is normal; do not commit the generated `images:` block unless you intend to pin a default image). The default `IMG=controller:latest` only works if that image exists on the cluster (build and push first).
 
-If `make deploy` fails building `controller-gen`, ensure Go 1.22+ and use the Makefile’s pinned `CONTROLLER_TOOLS_VERSION` (v0.16.5), or install `controller-gen` on your `PATH`.
+If `make deploy` fails building `controller-gen`, ensure Go 1.27+ and use the Makefile’s pinned `CONTROLLER_TOOLS_VERSION` (v0.22.0), or install `controller-gen` on your `PATH`.
 
 Undeploy the operator manager (CRD and CRs remain):
 

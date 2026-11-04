@@ -43,8 +43,12 @@ jobs:
           go-version-file: go.mod
           cache: true
       - name: Test
-        run: go test ./...
+        run: make test
+      - name: Lint
+        run: make lint
       - name: Build operator
         run: go build -o /dev/null ./cmd/...
       - name: Verify generated manifests
         run: make verify-manifests
+      - name: Verify generated code
+        run: make verify-generate
