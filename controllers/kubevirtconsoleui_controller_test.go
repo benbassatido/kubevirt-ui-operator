@@ -1,9 +1,11 @@
 package controllers
 
 import (
+	"context"
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -18,7 +20,10 @@ func TestReconcilePlatformRequirementsNotMetWithoutOpenShiftConsole(t *testing.T
 		t.Fatalf("create namespace: %v", err)
 	}
 	t.Cleanup(func() {
-		_ = k8sClient.Delete(ctx, &corev1.Namespace{Name: ns})
+		// t.Context() is canceled before Cleanup runs; use a live context for teardown.
+		if err := k8sClient.Delete(context.Background(), &corev1.Namespace{Name: ns}); err != nil && !apierrors.IsNotFound(err) {
+			t.Errorf("delete namespace %q: %v", ns, err)
+		}
 	})
 
 	cr := &consoleuiv1alpha1.KubeVirtConsoleUI{
