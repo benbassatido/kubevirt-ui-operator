@@ -2,16 +2,13 @@ package operconfig
 
 import (
 	"os"
-	"strconv"
 	"strings"
 )
 
 const (
 	EnvOperandNamespace = "OPERAND_NAMESPACE"
-	EnvDownstream       = "DOWNSTREAM"
 
-	NamespaceUpstream   = "kubevirt-ui"
-	NamespaceDownstream = "openshift-virtualization-ui"
+	NamespaceUpstream = "kubevirt-ui"
 )
 
 // Config holds operator runtime settings used to scope the manager cache and controller watches.
@@ -29,9 +26,6 @@ func LoadFromEnv() Config {
 func operandNamespaceFromEnv() string {
 	if ns := strings.TrimSpace(os.Getenv(EnvOperandNamespace)); ns != "" {
 		return ns
-	}
-	if downstream, _ := strconv.ParseBool(strings.TrimSpace(os.Getenv(EnvDownstream))); downstream {
-		return NamespaceDownstream
 	}
 	return NamespaceUpstream
 }
