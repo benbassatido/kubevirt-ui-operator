@@ -81,7 +81,7 @@ kubectl apply -f config/samples/consoleui_v1alpha1_kubevirtconsoleui.yaml
 
 `make deploy` runs `kustomize edit set image` under `config/manager/` (local change to that file is normal; do not commit the generated `images:` block unless you intend to pin a default image). The default `IMG=controller:latest` only works if that image exists on the cluster (build and push first).
 
-If `make deploy` fails building `controller-gen`, ensure Go 1.22+ and use the Makefile’s pinned `CONTROLLER_TOOLS_VERSION` (v0.16.5), or install `controller-gen` on your `PATH`.
+If `make deploy` fails building `controller-gen`, ensure Go 1.27+ and use the Makefile’s pinned `CONTROLLER_TOOLS_VERSION` (v0.22.0), or install `controller-gen` on your `PATH`.
 
 Undeploy the operator manager (CRD and CRs remain):
 

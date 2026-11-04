@@ -37,7 +37,7 @@ Install and development assume an **OpenShift** (or OpenShift-compatible) cluste
 
 ### Tooling (developers)
 
-- `kubectl` / `oc`, Go 1.22+ (when operator lands), Helm 3, `make`, container build tooling for operator image.
+- `kubectl` / `oc`, Go 1.27+ (when operator lands), Helm 3, `make`, container build tooling for operator image.
 - For local controller development: cluster with CRD install permissions (`make install`) or a shared dev cluster.
 
 See also: [Helm chart prerequisites](../helm/kubevirt-console-ui/README.md#prerequisites) and [TLS vs NetworkPolicy](../helm/kubevirt-console-ui/README.md#tls-and-networkpolicy).
