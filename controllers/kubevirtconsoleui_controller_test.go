@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"context"
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
@@ -13,20 +12,18 @@ import (
 )
 
 func TestReconcilePlatformRequirementsNotMetWithoutOpenShiftConsole(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	ns := "reconcile-test"
-	if err := k8sClient.Create(ctx, &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: ns}}); err != nil {
+	if err := k8sClient.Create(ctx, &corev1.Namespace{Name: ns}); err != nil {
 		t.Fatalf("create namespace: %v", err)
 	}
 	t.Cleanup(func() {
-		_ = k8sClient.Delete(ctx, &corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: ns}})
+		_ = k8sClient.Delete(ctx, &corev1.Namespace{Name: ns})
 	})
 
 	cr := &consoleuiv1alpha1.KubeVirtConsoleUI{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "test-ui",
-			Namespace: ns,
-		},
+		Name:      "test-ui",
+		Namespace: ns,
 	}
 	if err := k8sClient.Create(ctx, cr); err != nil {
 		t.Fatalf("create CR: %v", err)

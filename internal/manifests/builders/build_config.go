@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	consoleuiv1alpha1 "github.com/kubevirt-ui/kubevirt-ui-operator/api/v1alpha1"
 	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/labels"
@@ -64,11 +63,9 @@ func featuresData(spec *consoleuiv1alpha1.KubeVirtConsoleUISpec) map[string]stri
 
 func NginxConfigMap(m *Context) *corev1.ConfigMap {
 	return &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      m.Spec.Config.NginxConfigMapName,
-			Namespace: m.OperandNamespace,
-			Labels:    labels.Plugin(m.CR),
-		},
+		Name:      m.Spec.Config.NginxConfigMapName,
+		Namespace: m.OperandNamespace,
+		Labels:    labels.Plugin(m.CR),
 		Data: map[string]string{
 			"nginx.conf": nginxConfig(m.Spec.Plugin.Port),
 		},
@@ -77,22 +74,18 @@ func NginxConfigMap(m *Context) *corev1.ConfigMap {
 
 func UserSettingsConfigMap(m *Context) *corev1.ConfigMap {
 	return &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      m.Spec.Config.UserSettingsConfigMapName,
-			Namespace: m.OperandNamespace,
-			Labels:    labels.UIConfig(m.CR),
-		},
-		Data: map[string]string{},
+		Name:      m.Spec.Config.UserSettingsConfigMapName,
+		Namespace: m.OperandNamespace,
+		Labels:    labels.UIConfig(m.CR),
+		Data:      map[string]string{},
 	}
 }
 
 func FeaturesConfigMap(m *Context) *corev1.ConfigMap {
 	return &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      m.Spec.Config.FeaturesConfigMapName,
-			Namespace: m.OperandNamespace,
-			Labels:    labels.UIConfig(m.CR),
-		},
-		Data: featuresData(&m.Spec),
+		Name:      m.Spec.Config.FeaturesConfigMapName,
+		Namespace: m.OperandNamespace,
+		Labels:    labels.UIConfig(m.CR),
+		Data:      featuresData(&m.Spec),
 	}
 }
