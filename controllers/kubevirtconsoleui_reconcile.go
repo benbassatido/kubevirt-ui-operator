@@ -10,6 +10,7 @@ import (
 	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/manifests"
 	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/platform"
 	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/status"
+	"k8s.io/utils/ptr"
 )
 
 func (r *KubeVirtConsoleUIReconciler) reconcile(
@@ -31,7 +32,7 @@ func (r *KubeVirtConsoleUIReconciler) reconcile(
 	if reconcileErr != nil {
 		return reconcileErr
 	}
-	if !consoleuiv1alpha1.BoolOrDefault(mctx.Spec.Console.RegisterPlugin, true) {
+	if !ptr.Deref(mctx.Spec.Console.RegisterPlugin, true) {
 		return nil
 	}
 

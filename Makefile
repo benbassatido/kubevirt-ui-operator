@@ -124,8 +124,9 @@ verify-generate: generate ## Regenerate deepcopy; fail if output differs or is u
 	fi
 
 .PHONY: fmt
-fmt: ## Run go fmt against code.
+fmt: ## Run go fmt and apply Go modernizers (go fix).
 	go fmt ./...
+	go fix ./...
 
 .PHONY: vet
 vet: ## Run go vet against code.

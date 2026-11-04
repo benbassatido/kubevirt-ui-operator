@@ -5,9 +5,3 @@ run:
   tests: true
 linters:
   default: standard
-  exclusions:
-    rules:
-      # Kubebuilder API packages still use controller-runtime scheme.Builder (deprecated upstream).
-      - path: api/
-        linters:
-          - staticcheck

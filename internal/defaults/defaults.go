@@ -25,7 +25,7 @@ func Apply(spec *consoleuiv1alpha1.KubeVirtConsoleUISpec) {
 		spec.PriorityClass.Name = "kubevirt-cluster-critical"
 	}
 	if spec.PriorityClass.Value == nil {
-		spec.PriorityClass.Value = consoleuiv1alpha1.Int32Ptr(1000000000)
+		spec.PriorityClass.Value = new(int32(1000000000))
 	}
 	if spec.PriorityClass.Description == "" {
 		spec.PriorityClass.Description = "Priority class for critical KubeVirt and virtualization UI components"
@@ -43,7 +43,7 @@ func Apply(spec *consoleuiv1alpha1.KubeVirtConsoleUISpec) {
 		spec.Plugin.Port = 9443
 	}
 	if spec.Plugin.Replicas == nil {
-		spec.Plugin.Replicas = consoleuiv1alpha1.Int32Ptr(1)
+		spec.Plugin.Replicas = new(int32(1))
 	}
 	if spec.Plugin.ServiceName == "" {
 		spec.Plugin.ServiceName = "kubevirt-console-plugin-service"
@@ -64,7 +64,7 @@ func Apply(spec *consoleuiv1alpha1.KubeVirtConsoleUISpec) {
 		spec.Proxy.Port = 8080
 	}
 	if spec.Proxy.Replicas == nil {
-		spec.Proxy.Replicas = consoleuiv1alpha1.Int32Ptr(1)
+		spec.Proxy.Replicas = new(int32(1))
 	}
 	if spec.Proxy.ServiceName == "" {
 		spec.Proxy.ServiceName = "kubevirt-apiserver-proxy-service"
@@ -108,19 +108,19 @@ func Apply(spec *consoleuiv1alpha1.KubeVirtConsoleUISpec) {
 // defaultTrueBools sets chart defaults that are true when omitted (nil pointer).
 func defaultTrueBools(spec *consoleuiv1alpha1.KubeVirtConsoleUISpec) {
 	if spec.HCOLabels.Enabled == nil {
-		spec.HCOLabels.Enabled = consoleuiv1alpha1.Ptr(true)
+		spec.HCOLabels.Enabled = new(true)
 	}
 	if spec.PriorityClass.Create == nil {
-		spec.PriorityClass.Create = consoleuiv1alpha1.Ptr(true)
+		spec.PriorityClass.Create = new(true)
 	}
 	if spec.Console.RegisterPlugin == nil {
-		spec.Console.RegisterPlugin = consoleuiv1alpha1.Ptr(true)
+		spec.Console.RegisterPlugin = new(true)
 	}
 	if spec.NetworkPolicy.Enabled == nil {
-		spec.NetworkPolicy.Enabled = consoleuiv1alpha1.Ptr(true)
+		spec.NetworkPolicy.Enabled = new(true)
 	}
 	if spec.Route.Enabled == nil {
-		spec.Route.Enabled = consoleuiv1alpha1.Ptr(true)
+		spec.Route.Enabled = new(true)
 	}
 }
 
