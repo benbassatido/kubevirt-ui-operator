@@ -5,8 +5,8 @@
 ```bash
 helm lint ./helm/kubevirt-console-ui
 helm template kubevirt-ui ./helm/kubevirt-console-ui \
-  --set plugin.image=quay.io/kubevirt-ui/kubevirt-plugin:<tag> \
-  --set proxy.image=quay.io/kubevirt-ui/kubevirt-apiserver-proxy:<tag>
+  --set plugin.image=quay.io/kubevirtui/kubevirt-plugin:<tag> \
+  --set proxy.image=quay.io/kubevirtui/kubevirt-apiserver-proxy:<tag>
 ```
 
 Smoke install on OpenShift: see [helm/kubevirt-console-ui/README.md](../helm/kubevirt-console-ui/README.md).
@@ -35,10 +35,12 @@ operator-sdk version
 make help
 make manifests        # CRD + RBAC from kubebuilder markers (needs controller-gen)
 make verify-manifests # same as CI: fails if config/crd/bases or role.yaml differ or are untracked
-make generate    # deepcopy (needs controller-gen)
+make generate         # deepcopy (needs controller-gen)
+make verify-generate  # same as CI: fails if zz_generated.deepcopy.go differs
+make lint             # golangci-lint (see .golangci.yml)
 make test
 make build       # bin/manager
-make run         # controller against current kubeconfig (uses your user RBAC)
+make run         # controller against current kubeconfig (uses your user RBAC); add --zap-devel for debug logs
 ```
 
 Install the CRD, create sample namespaces, run the controller, then apply the sample:
@@ -81,7 +83,7 @@ kubectl apply -f config/samples/consoleui_v1alpha1_kubevirtconsoleui.yaml
 
 `make deploy` runs `kustomize edit set image` under `config/manager/` (local change to that file is normal; do not commit the generated `images:` block unless you intend to pin a default image). The default `IMG=controller:latest` only works if that image exists on the cluster (build and push first).
 
-If `make deploy` fails building `controller-gen`, ensure Go 1.22+ and use the Makefile’s pinned `CONTROLLER_TOOLS_VERSION` (v0.16.5), or install `controller-gen` on your `PATH`.
+If `make deploy` fails building `controller-gen`, ensure Go 1.27+ and use the Makefile’s pinned `CONTROLLER_TOOLS_VERSION` (v0.22.0), or install `controller-gen` on your `PATH`.
 
 Undeploy the operator manager (CRD and CRs remain):
 
@@ -106,11 +108,36 @@ make bundle VERSION=${VERSION} IMG=${IMG}
 make bundle-build bundle-push VERSION=${VERSION} BUNDLE_IMG=${BUNDLE_IMG}
 ```
 
-Use the same `VERSION`, `IMG`, and `BUNDLE_IMG` on every target. A second `make` without those variables falls back to `VERSION=0.0.1` and `quay.io/kubevirt-ui/kubevirt-ui-operator-bundle:v0.0.1`.
+Use the same `VERSION`, `IMG`, and `BUNDLE_IMG` on every target. A second `make` without those variables falls back to `VERSION=0.0.1` and `quay.io/kubevirtui/kubevirt-ui-operator-bundle:v0.0.1`.
 
 See [Operator SDK bundle tutorial](https://sdk.operatorframework.io/docs/olm-integration/tutorial-bundle/).
 
 The reconciler sets `PlatformRequirementsMet` when OpenShift console APIs are available, then reconciles UI operands. With `spec.console.registerPlugin: true`, the manager patches `consoles.operator.openshift.io/cluster` (requires ClusterRole rules on the operator SA).
+
+### CI: operator image
+
+Workflow [`.github/workflows/operator-image.yaml`](../.github/workflows/operator-image.yaml):
+
+| Trigger | Image tags pushed |
+|---------|-------------------|
+| **Git tag push** (`v*`, e.g. `v0.1.0`) | `quay.io/kubevirtui/kubevirt-ui-operator:<tag>` |
+| **Push to `main`** | `latest`, `sha-<short>` |
+| **Pull request** (same-repo only) | `pr-<number>` (multi-arch); fork PRs build only, no push |
+
+Multi-arch: `linux/amd64`, `linux/arm64`, `linux/s390x`.
+
+Repository secrets required for publish (Quay robot account):
+
+- `QUAY_USERNAME`
+- `QUAY_PASSWORD`
+
+Deploy the published manager to a cluster:
+
+```bash
+export IMG=quay.io/kubevirtui/kubevirt-ui-operator:latest
+# git tag v0.1.0 && git push origin v0.1.0  →  :v0.1.0  |  PR: :pr-<n>  |  main: :latest or :sha-<short>
+make deploy
+```
 
 ## Cluster prerequisites
 

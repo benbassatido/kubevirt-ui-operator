@@ -7,23 +7,21 @@ import (
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/utils/ptr"
 
-	consoleuiv1alpha1 "github.com/kubevirt-ui/kubevirt-ui-operator/api/v1alpha1"
 	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/labels"
 )
 
 func ProxyServiceAccount(m *Context) *corev1.ServiceAccount {
 	return &corev1.ServiceAccount{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      m.Spec.Proxy.Name,
-			Namespace: m.OperandNamespace,
-			Labels:    labels.Proxy(m.CR),
-		},
+		Name:      m.Spec.Proxy.Name,
+		Namespace: m.OperandNamespace,
+		Labels:    labels.Proxy(m.CR),
 	}
 }
 
 func ProxyDeployment(m *Context) *appsv1.Deployment {
-	replicas := consoleuiv1alpha1.Int32OrDefault(m.Spec.Proxy.Replicas, 1)
+	replicas := ptr.Deref(m.Spec.Proxy.Replicas, 1)
 	proxy := m.Spec.Proxy
 	container := corev1.Container{
 		Name:            proxy.Name,
@@ -37,9 +35,9 @@ func ProxyDeployment(m *Context) *appsv1.Deployment {
 			},
 		},
 		SecurityContext: &corev1.SecurityContext{
-			AllowPrivilegeEscalation: boolPtr(false),
+			AllowPrivilegeEscalation: new(false),
 			Capabilities:             &corev1.Capabilities{Drop: []corev1.Capability{"ALL"}},
-			ReadOnlyRootFilesystem:   boolPtr(true),
+			ReadOnlyRootFilesystem:   new(true),
 		},
 		VolumeMounts: []corev1.VolumeMount{
 			{Name: proxy.ServingCertSecret, MountPath: "/app/cert", ReadOnly: true},
@@ -49,11 +47,9 @@ func ProxyDeployment(m *Context) *appsv1.Deployment {
 		container.Args = append([]string{}, proxy.TLSArgs...)
 	}
 	return &appsv1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      proxy.Name,
-			Namespace: m.OperandNamespace,
-			Labels:    labels.Proxy(m.CR),
-		},
+		Name:      proxy.Name,
+		Namespace: m.OperandNamespace,
+		Labels:    labels.Proxy(m.CR),
 		Spec: appsv1.DeploymentSpec{
 			Replicas: &replicas,
 			Selector: &metav1.LabelSelector{MatchLabels: labels.ProxySelector(m.CR)},
@@ -65,27 +61,23 @@ func ProxyDeployment(m *Context) *appsv1.Deployment {
 				},
 			},
 			Template: corev1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: labels.Proxy(m.CR),
-					Annotations: map[string]string{
-						"openshift.io/required-scc": "restricted-v2",
-					},
+				Labels: labels.Proxy(m.CR),
+				Annotations: map[string]string{
+					"openshift.io/required-scc": "restricted-v2",
 				},
 				Spec: corev1.PodSpec{
 					ServiceAccountName: proxy.Name,
 					PriorityClassName:  proxy.PriorityClassName,
 					SecurityContext: &corev1.PodSecurityContext{
-						RunAsNonRoot: boolPtr(true),
+						RunAsNonRoot: new(true),
 						SeccompProfile: &corev1.SeccompProfile{
 							Type: corev1.SeccompProfileTypeRuntimeDefault,
 						},
 					},
 					Containers: []corev1.Container{container},
 					Volumes: []corev1.Volume{{
-						Name: proxy.ServingCertSecret,
-						VolumeSource: corev1.VolumeSource{
-							Secret: &corev1.SecretVolumeSource{SecretName: proxy.ServingCertSecret, DefaultMode: int32Ptr(420)},
-						},
+						Name:   proxy.ServingCertSecret,
+						Secret: &corev1.SecretVolumeSource{SecretName: proxy.ServingCertSecret, DefaultMode: new(int32(420))},
 					}},
 				},
 			},
@@ -96,13 +88,11 @@ func ProxyDeployment(m *Context) *appsv1.Deployment {
 func ProxyService(m *Context) *corev1.Service {
 	proxy := m.Spec.Proxy
 	return &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      proxy.ServiceName,
-			Namespace: m.OperandNamespace,
-			Labels:    labels.Proxy(m.CR),
-			Annotations: map[string]string{
-				"service.beta.openshift.io/serving-cert-secret-name": proxy.ServingCertSecret,
-			},
+		Name:      proxy.ServiceName,
+		Namespace: m.OperandNamespace,
+		Labels:    labels.Proxy(m.CR),
+		Annotations: map[string]string{
+			"service.beta.openshift.io/serving-cert-secret-name": proxy.ServingCertSecret,
 		},
 		Spec: corev1.ServiceSpec{
 			Type:     corev1.ServiceTypeClusterIP,
@@ -126,11 +116,9 @@ func ProxyNetworkPolicy(m *Context) *networkingv1.NetworkPolicy {
 	npLabels := labels.Proxy(m.CR)
 	npLabels["np.kubevirt.io/allow-access-cluster-services"] = "true"
 	return &networkingv1.NetworkPolicy{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "kubevirt-apiserver-proxy-np",
-			Namespace: m.OperandNamespace,
-			Labels:    npLabels,
-		},
+		Name:      "kubevirt-apiserver-proxy-np",
+		Namespace: m.OperandNamespace,
+		Labels:    npLabels,
 		Spec: networkingv1.NetworkPolicySpec{
 			PodSelector: metav1.LabelSelector{MatchLabels: labels.ProxySelector(m.CR)},
 			PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeIngress, networkingv1.PolicyTypeEgress},
@@ -166,13 +154,11 @@ func ProxyRoute(m *Context) *routev1.Route {
 	weight := int32(100)
 	targetPort := intstrFromInt32(m.Spec.Proxy.Port)
 	obj := &routev1.Route{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      route.Name,
-			Namespace: m.OperandNamespace,
-			Labels:    labels.Proxy(m.CR),
-			Annotations: map[string]string{
-				"haproxy.router.openshift.io/hsts_header": "max-age=31536000;includeSubDomains;preload",
-			},
+		Name:      route.Name,
+		Namespace: m.OperandNamespace,
+		Labels:    labels.Proxy(m.CR),
+		Annotations: map[string]string{
+			"haproxy.router.openshift.io/hsts_header": "max-age=31536000;includeSubDomains;preload",
 		},
 		Spec: routev1.RouteSpec{
 			To: routev1.RouteTargetReference{

@@ -5,7 +5,6 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestDeploymentAvailable(t *testing.T) {
@@ -27,8 +26,8 @@ func TestDeploymentAvailable(t *testing.T) {
 	})
 	t.Run("insufficient replicas", func(t *testing.T) {
 		ok, detail := deploymentAvailable(&appsv1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{Name: "kubevirt-console-plugin"},
-			Spec:       appsv1.DeploymentSpec{Replicas: &replicas},
+			Name: "kubevirt-console-plugin",
+			Spec: appsv1.DeploymentSpec{Replicas: &replicas},
 			Status: appsv1.DeploymentStatus{
 				AvailableReplicas: 0,
 				Conditions: []appsv1.DeploymentCondition{{

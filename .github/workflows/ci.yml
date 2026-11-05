@@ -26,8 +26,8 @@ jobs:
         run: |
           helm template kubevirt-ui ./helm/kubevirt-console-ui \
             --namespace openshift-cnv \
-            --set plugin.image=quay.io/kubevirt-ui/kubevirt-plugin:test \
-            --set proxy.image=quay.io/kubevirt-ui/kubevirt-apiserver-proxy:test \
+            --set plugin.image=quay.io/kubevirtui/kubevirt-plugin:test \
+            --set proxy.image=quay.io/kubevirtui/kubevirt-apiserver-proxy:test \
             > /tmp/rendered.yaml
           test -s /tmp/rendered.yaml
 
@@ -43,8 +43,12 @@ jobs:
           go-version-file: go.mod
           cache: true
       - name: Test
-        run: go test ./...
+        run: make test
+      - name: Lint
+        run: make lint
       - name: Build operator
         run: go build -o /dev/null ./cmd/...
       - name: Verify generated manifests
         run: make verify-manifests
+      - name: Verify generated code
+        run: make verify-generate

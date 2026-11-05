@@ -12,6 +12,7 @@ import (
 
 	consoleuiv1alpha1 "github.com/kubevirt-ui/kubevirt-ui-operator/api/v1alpha1"
 	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/manifests"
+	"k8s.io/utils/ptr"
 )
 
 func (r *KubeVirtConsoleUIReconciler) mapConsolePluginToRequests(ctx context.Context, obj client.Object) []reconcile.Request {
@@ -63,7 +64,7 @@ func (r *KubeVirtConsoleUIReconciler) requestsForPriorityClassName(ctx context.C
 	for i := range list.Items {
 		cr := &list.Items[i]
 		mctx := manifests.NewContext(cr)
-		if !consoleuiv1alpha1.BoolOrDefault(mctx.Spec.PriorityClass.Create, true) {
+		if !ptr.Deref(mctx.Spec.PriorityClass.Create, true) {
 			continue
 		}
 		if mctx.Spec.PriorityClass.Name == priorityClassName {
@@ -82,7 +83,7 @@ func (r *KubeVirtConsoleUIReconciler) requestsForConsoleRegistration(ctx context
 	for i := range list.Items {
 		cr := &list.Items[i]
 		mctx := manifests.NewContext(cr)
-		if !consoleuiv1alpha1.BoolOrDefault(mctx.Spec.Console.RegisterPlugin, true) {
+		if !ptr.Deref(mctx.Spec.Console.RegisterPlugin, true) {
 			continue
 		}
 		out = append(out, reconcile.Request{NamespacedName: client.ObjectKeyFromObject(cr)})

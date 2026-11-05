@@ -15,8 +15,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
-	consoleuiv1alpha1 "github.com/kubevirt-ui/kubevirt-ui-operator/api/v1alpha1"
 	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/manifests/builders"
+	"k8s.io/utils/ptr"
 )
 
 // ReconcileStack applies Helm-parity operands for the effective spec in Context.
@@ -62,7 +62,7 @@ func ReconcileStack(ctx context.Context, c client.Client, scheme *runtime.Scheme
 			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.ConfigReaderRoleBinding(m) })
 		},
 	}
-	if consoleuiv1alpha1.BoolOrDefault(m.Spec.NetworkPolicy.Enabled, true) {
+	if ptr.Deref(m.Spec.NetworkPolicy.Enabled, true) {
 		steps = append(steps,
 			func() error {
 				return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.PluginNetworkPolicy(m) })
@@ -81,7 +81,7 @@ func ReconcileStack(ctx context.Context, c client.Client, scheme *runtime.Scheme
 			},
 		)
 	}
-	if consoleuiv1alpha1.BoolOrDefault(m.Spec.Route.Enabled, true) {
+	if ptr.Deref(m.Spec.Route.Enabled, true) {
 		steps = append(steps, func() error {
 			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.ProxyRoute(m) })
 		})
