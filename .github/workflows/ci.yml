@@ -25,9 +25,9 @@ jobs:
       - name: Template chart
         run: |
           helm template kubevirt-ui ./helm/kubevirt-console-ui \
-            --namespace openshift-cnv \
-            --set plugin.image=quay.io/kubevirtui/kubevirt-plugin:test \
-            --set proxy.image=quay.io/kubevirtui/kubevirt-apiserver-proxy:test \
+            --namespace kubevirt-ui \
+            --set plugin.image=quay.io/kubevirt-ui/kubevirt-plugin:test \
+            --set proxy.image=quay.io/kubevirt-ui/kubevirt-apiserver-proxy:test \
             > /tmp/rendered.yaml
           test -s /tmp/rendered.yaml
 

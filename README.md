@@ -52,7 +52,7 @@ Planned additions: envtest/e2e on OpenShift, published operator image defaults, 
 Prerequisites:
 
 - **OpenShift Console:** Console Operator healthy, `ConsolePlugin` CRD (`console.openshift.io`), console UI running in `openshift-console`; cluster admin or equivalent if enabling automatic plugin registration on `consoles.operator.openshift.io/cluster`
-- Namespace `openshift-cnv` (or override in values)—do **not** install on top of an existing HCO-managed UI in the same namespace
+- Namespace **`kubevirt-ui`** by default (same as operator `OPERAND_NAMESPACE`)—do **not** install on top of an existing HCO-managed UI in the same namespace
 - KubeVirt API available to users (RBAC + running control plane)
 - Container images for plugin and proxy (pin to your CNV/HCO versions when possible)
 
@@ -60,10 +60,10 @@ Full prerequisite list: [docs/ROADMAP.md#prerequisites-cluster-and-console](docs
 
 ```bash
 helm upgrade --install kubevirt-ui ./helm/kubevirt-console-ui \
-  --namespace openshift-cnv \
+  --namespace kubevirt-ui \
   --create-namespace \
-  --set plugin.image=quay.io/kubevirtui/kubevirt-plugin:<tag> \
-  --set proxy.image=quay.io/kubevirtui/kubevirt-apiserver-proxy:<tag>
+  --set plugin.image=quay.io/kubevirt-ui/kubevirt-plugin:<tag> \
+  --set proxy.image=quay.io/kubevirt-ui/kubevirt-apiserver-proxy:<tag>
 ```
 
 Image references used by HCO are defined in [`deploy/images.env`](https://github.com/kubevirt/hyperconverged-cluster-operator/blob/main/deploy/images.env) (`KUBEVIRT_CONSOLE_PLUGIN_IMAGE`, `KUBEVIRT_CONSOLE_PROXY_IMAGE`).

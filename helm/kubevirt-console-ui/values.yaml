@@ -1,10 +1,11 @@
-# Target namespace (CNV installs UI into openshift-cnv).
-namespace: openshift-cnv
-createNamespace: false
+# Target namespace (matches operator OPERAND_NAMESPACE default). Use openshift-cnv only when
+# aligning with an existing CNV namespace — avoid duplicate UI stacks in the same namespace.
+namespace: kubevirt-ui
+createNamespace: true
 
-# Match HCO/CNV labels so resources align with operator-managed installs.
+# HCO-style labels (app: kubevirt-hyperconverged). Default false matches kubevirt-ui-operator operands.
 hcoLabels:
-  enabled: true
+  enabled: false
   app: kubevirt-hyperconverged
   managedBy: hco-operator
   partOf: hyperconverged-cluster
@@ -21,7 +22,7 @@ priorityClass:
 
 plugin:
   name: kubevirt-console-plugin
-  image: quay.io/kubevirtui/kubevirt-plugin:latest
+  image: quay.io/kubevirt-ui/kubevirt-plugin:latest
   port: 9443
   replicas: 1
   serviceName: kubevirt-console-plugin-service
@@ -30,7 +31,7 @@ plugin:
 
 proxy:
   name: kubevirt-apiserver-proxy
-  image: quay.io/kubevirtui/kubevirt-apiserver-proxy:latest
+  image: quay.io/kubevirt-ui/kubevirt-apiserver-proxy:latest
   port: 8080
   replicas: 1
   serviceName: kubevirt-apiserver-proxy-service
@@ -57,6 +58,7 @@ config:
     nodePortAddress: ''
     nodePortEnabled: 'false'
     ipStackType: ''
+    # Omit or leave empty: hcoVersion is not written to the ConfigMap (operator discovers from HCO when installed).
     hcoVersion: ''
 
 console:

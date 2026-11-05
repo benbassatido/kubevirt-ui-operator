@@ -5,8 +5,8 @@
 ```bash
 helm lint ./helm/kubevirt-console-ui
 helm template kubevirt-ui ./helm/kubevirt-console-ui \
-  --set plugin.image=quay.io/kubevirtui/kubevirt-plugin:<tag> \
-  --set proxy.image=quay.io/kubevirtui/kubevirt-apiserver-proxy:<tag>
+  --set plugin.image=quay.io/kubevirt-ui/kubevirt-plugin:<tag> \
+  --set proxy.image=quay.io/kubevirt-ui/kubevirt-apiserver-proxy:<tag>
 ```
 
 Smoke install on OpenShift: see [helm/kubevirt-console-ui/README.md](../helm/kubevirt-console-ui/README.md).
@@ -58,7 +58,7 @@ kubectl create namespace openshift-cnv-test --dry-run=client -o yaml | kubectl a
 kubectl apply -f config/samples/consoleui_v1alpha1_kubevirtconsoleui.yaml
 ```
 
-Create the operand namespace before applying the CR (`scripts/apply-sample-cr.sh` uses `metadata.namespace` from the sample).
+Create the operand namespace before applying the CR (`scripts/apply-sample-cr.sh` uses `OPERAND_NAMESPACE`, default `kubevirt-ui`).
 
 ### Deploy manager to the cluster
 
