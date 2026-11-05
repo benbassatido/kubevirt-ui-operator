@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
@@ -11,11 +12,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	consoleuiv1alpha1 "github.com/kubevirt-ui/kubevirt-ui-operator/api/v1alpha1"
+	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/operconfig"
 )
 
 func TestReconcilePlatformRequirementsNotMetWithoutOpenShiftConsole(t *testing.T) {
 	ctx := t.Context()
 	ns := "reconcile-test"
+	t.Setenv(operconfig.EnvOperandNamespace, ns)
 	if err := k8sClient.Create(ctx, &corev1.Namespace{Name: ns}); err != nil {
 		t.Fatalf("create namespace: %v", err)
 	}
@@ -24,6 +27,7 @@ func TestReconcilePlatformRequirementsNotMetWithoutOpenShiftConsole(t *testing.T
 		if err := k8sClient.Delete(context.Background(), &corev1.Namespace{Name: ns}); err != nil && !apierrors.IsNotFound(err) {
 			t.Errorf("delete namespace %q: %v", ns, err)
 		}
+		_ = os.Unsetenv(operconfig.EnvOperandNamespace)
 	})
 
 	cr := &consoleuiv1alpha1.KubeVirtConsoleUI{
@@ -37,6 +41,7 @@ func TestReconcilePlatformRequirementsNotMetWithoutOpenShiftConsole(t *testing.T
 	r := &KubeVirtConsoleUIReconciler{
 		Client: k8sClient,
 		Scheme: testScheme,
+		Config: operconfig.LoadFromEnv(),
 	}
 	if _, err := r.Reconcile(ctx, ctrl.Request{NamespacedName: client.ObjectKeyFromObject(cr)}); err != nil {
 		t.Fatalf("reconcile: %v", err)

@@ -13,9 +13,9 @@ import (
 )
 
 const (
-	priorityClassName     = "kubevirt-cluster-critical"
-	consolePluginName     = "kubevirt-plugin"
-	consolePluginCRDName  = "consoleplugins.console.openshift.io"
+	priorityClassName    = "kubevirt-cluster-critical"
+	consolePluginName    = "kubevirt-plugin"
+	consolePluginCRDName = "consoleplugins.console.openshift.io"
 )
 
 // CacheOptions returns a scoped informer cache: operand namespace plus fixed cluster-scoped objects.
