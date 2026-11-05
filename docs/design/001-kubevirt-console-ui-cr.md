@@ -26,7 +26,7 @@ Same as [ROADMAP — Prerequisites](../ROADMAP.md#prerequisites-cluster-and-cons
 
 **Group:** `consoleui.kubevirt.io` (proposed)  
 **Kind:** `KubeVirtConsoleUI`  
-**Scope:** Namespaced. Operands deploy in the CR’s **`metadata.namespace`**. Create that namespace before applying the CR.
+**Scope:** Cluster. A single instance named **`cluster`**. Operands deploy in **`OPERAND_NAMESPACE`** (operator env), not in CR metadata.
 
 ### Spec (align with Helm `values.yaml`)
 

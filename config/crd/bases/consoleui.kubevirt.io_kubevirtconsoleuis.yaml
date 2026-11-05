@@ -14,20 +14,18 @@ spec:
     shortNames:
     - kvui
     singular: kubevirtconsoleui
-  scope: Namespaced
+  scope: Cluster
   versions:
   - additionalPrinterColumns:
     - jsonPath: .status.conditions[?(@.type=="Ready")].status
       name: Ready
       type: string
-    - jsonPath: .metadata.namespace
-      name: Namespace
-      type: string
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: KubeVirtConsoleUI deploys the KubeVirt OpenShift console plugin
-          stack.
+        description: |-
+          KubeVirtConsoleUI deploys the KubeVirt OpenShift console plugin stack.
+          The singleton instance must be named "cluster"; operand namespace comes from OPERAND_NAMESPACE.
         properties:
           apiVersion:
             description: |-
@@ -47,178 +45,19 @@ spec:
           metadata:
             type: object
           spec:
-            description: KubeVirtConsoleUISpec defines the desired console UI stack
-              (Helm parity). Operands are deployed in the CR's metadata.namespace.
+            description: |-
+              KubeVirtConsoleUISpec defines optional day-2 settings for the console UI stack.
+              Operand names, images, and namespace are fixed by the operator (see OPERAND_NAMESPACE and image env vars).
+              Feature toggles and hcoVersion live in the kubevirt-ui-features ConfigMap (operator-managed).
             properties:
-              config:
-                properties:
-                  features:
-                    properties:
-                      automaticSubscriptionActivationKey:
-                        type: string
-                      automaticSubscriptionOrganizationId:
-                        type: string
-                      disabledGuestSystemLogsAccess:
-                        default: "false"
-                        type: string
-                      hcoVersion:
-                        type: string
-                      ipStackType:
-                        type: string
-                      kubevirtApiserverProxy:
-                        default: "true"
-                        type: string
-                      loadBalancerEnabled:
-                        default: "true"
-                        type: string
-                      nodePortAddress:
-                        type: string
-                      nodePortEnabled:
-                        default: "false"
-                        type: string
-                    type: object
-                  featuresConfigMapName:
-                    default: kubevirt-ui-features
-                    type: string
-                  nginxConfigMapName:
-                    default: nginx-conf
-                    type: string
-                  userSettingsConfigMapName:
-                    default: kubevirt-user-settings
-                    type: string
-                type: object
-              console:
-                properties:
-                  registerPlugin:
-                    default: true
-                    type: boolean
-                type: object
-              consolePlugin:
-                properties:
-                  displayName:
-                    default: Kubevirt Console Plugin
-                    type: string
-                  name:
-                    default: kubevirt-plugin
-                    type: string
-                  proxyAlias:
-                    default: kubevirt-apiserver-proxy
-                    type: string
-                type: object
-              hcoLabels:
-                properties:
-                  app:
-                    default: kubevirt-hyperconverged
-                    type: string
-                  enabled:
-                    default: true
-                    type: boolean
-                  managedBy:
-                    default: hco-operator
-                    type: string
-                  partOf:
-                    default: hyperconverged-cluster
-                    type: string
-                  version:
-                    type: string
-                type: object
-              networkPolicy:
-                properties:
-                  enabled:
-                    default: true
-                    type: boolean
-                type: object
-              plugin:
-                properties:
-                  image:
-                    default: quay.io/kubevirtui/kubevirt-plugin:latest
-                    type: string
-                  name:
-                    default: kubevirt-console-plugin
-                    type: string
-                  port:
-                    default: 9443
-                    format: int32
-                    type: integer
-                  priorityClassName:
-                    type: string
-                  replicas:
-                    default: 1
-                    format: int32
-                    type: integer
-                  serviceName:
-                    default: kubevirt-console-plugin-service
-                    type: string
-                  servingCertSecret:
-                    default: plugin-serving-cert
-                    type: string
-                type: object
-              priorityClass:
-                properties:
-                  create:
-                    default: true
-                    type: boolean
-                  description:
-                    type: string
-                  name:
-                    default: kubevirt-cluster-critical
-                    type: string
-                  preemptionPolicy:
-                    default: PreemptLowerPriority
-                    type: string
-                  value:
-                    default: 1000000000
-                    format: int32
-                    type: integer
-                type: object
               proxy:
+                description: Proxy holds optional proxy container flags (for example
+                  TLS profile args on OpenShift).
                 properties:
-                  image:
-                    default: quay.io/kubevirtui/kubevirt-apiserver-proxy:latest
-                    type: string
-                  name:
-                    default: kubevirt-apiserver-proxy
-                    type: string
-                  port:
-                    default: 8080
-                    format: int32
-                    type: integer
-                  priorityClassName:
-                    type: string
-                  replicas:
-                    default: 1
-                    format: int32
-                    type: integer
-                  serviceName:
-                    default: kubevirt-apiserver-proxy-service
-                    type: string
-                  servingCertSecret:
-                    default: console-proxy-serving-cert
-                    type: string
                   tlsArgs:
                     items:
                       type: string
                     type: array
-                type: object
-              rbac:
-                properties:
-                  configReaderRoleBindingName:
-                    default: kubevirt-ui-config-reader-rolebinding
-                    type: string
-                  configReaderRoleName:
-                    default: kubevirt-ui-config-reader
-                    type: string
-                type: object
-              route:
-                properties:
-                  enabled:
-                    default: true
-                    type: boolean
-                  host:
-                    type: string
-                  name:
-                    default: kubevirt-apiserver-proxy
-                    type: string
                 type: object
             type: object
           status:
