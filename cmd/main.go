@@ -22,6 +22,7 @@ import (
 
 	consoleuiv1alpha1 "github.com/kubevirt-ui/kubevirt-ui-operator/api/v1alpha1"
 	"github.com/kubevirt-ui/kubevirt-ui-operator/controllers"
+	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/operconfig"
 )
 
 var (
@@ -53,8 +54,12 @@ func main() {
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
+	opCfg := operconfig.LoadFromEnv()
+	setupLog.Info("operator configuration", "operandNamespace", opCfg.OperandNamespace)
+
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme: scheme,
+		Cache:  operconfig.CacheOptions(opCfg),
 		Metrics: metricsserver.Options{
 			BindAddress: metricsAddr,
 		},
@@ -70,6 +75,7 @@ func main() {
 	if err = (&controllers.KubeVirtConsoleUIReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
+		Config: opCfg,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "KubeVirtConsoleUI")
 		os.Exit(1)
