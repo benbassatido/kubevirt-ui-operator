@@ -6,24 +6,23 @@ import (
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/utils/ptr"
 
 	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/labels"
+	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/names"
 )
 
 func PluginServiceAccount(m *Context) *corev1.ServiceAccount {
 	return &corev1.ServiceAccount{
-		Name:      m.Spec.Plugin.Name,
+		Name:      names.PluginDeployment,
 		Namespace: m.OperandNamespace,
 		Labels:    labels.Plugin(m.CR),
 	}
 }
 
 func PluginDeployment(m *Context) *appsv1.Deployment {
-	replicas := ptr.Deref(m.Spec.Plugin.Replicas, 1)
-	plugin := m.Spec.Plugin
+	replicas := int32(1)
 	return &appsv1.Deployment{
-		Name:      plugin.Name,
+		Name:      names.PluginDeployment,
 		Namespace: m.OperandNamespace,
 		Labels:    labels.Plugin(m.CR),
 		Spec: appsv1.DeploymentSpec{
@@ -42,8 +41,8 @@ func PluginDeployment(m *Context) *appsv1.Deployment {
 					"openshift.io/required-scc": "restricted-v2",
 				},
 				Spec: corev1.PodSpec{
-					ServiceAccountName: plugin.Name,
-					PriorityClassName:  plugin.PriorityClassName,
+					ServiceAccountName: names.PluginDeployment,
+					PriorityClassName:  names.PriorityClass,
 					SecurityContext: &corev1.PodSecurityContext{
 						RunAsNonRoot: new(true),
 						SeccompProfile: &corev1.SeccompProfile{
@@ -51,10 +50,10 @@ func PluginDeployment(m *Context) *appsv1.Deployment {
 						},
 					},
 					Containers: []corev1.Container{{
-						Name:            plugin.Name,
-						Image:           plugin.Image,
+						Name:            names.PluginDeployment,
+						Image:           m.PluginImage,
 						ImagePullPolicy: corev1.PullIfNotPresent,
-						Ports:           []corev1.ContainerPort{{Name: "https", ContainerPort: plugin.Port, Protocol: corev1.ProtocolTCP}},
+						Ports:           []corev1.ContainerPort{{Name: "https", ContainerPort: names.PluginPort, Protocol: corev1.ProtocolTCP}},
 						Resources: corev1.ResourceRequirements{
 							Requests: corev1.ResourceList{
 								corev1.ResourceCPU:    resourceQuantity("10m"),
@@ -66,16 +65,16 @@ func PluginDeployment(m *Context) *appsv1.Deployment {
 							Capabilities:             &corev1.Capabilities{Drop: []corev1.Capability{"ALL"}},
 						},
 						VolumeMounts: []corev1.VolumeMount{
-							{Name: plugin.ServingCertSecret, MountPath: "/var/serving-cert", ReadOnly: true},
-							{Name: m.Spec.Config.NginxConfigMapName, MountPath: "/etc/nginx/nginx.conf", SubPath: "nginx.conf", ReadOnly: true},
+							{Name: names.PluginServingCert, MountPath: "/var/serving-cert", ReadOnly: true},
+							{Name: names.NginxConfigMap, MountPath: "/etc/nginx/nginx.conf", SubPath: "nginx.conf", ReadOnly: true},
 						},
 					}},
 					Volumes: []corev1.Volume{
-						{Name: plugin.ServingCertSecret,
-							Secret: &corev1.SecretVolumeSource{SecretName: plugin.ServingCertSecret, DefaultMode: new(int32(420))}},
-						{Name: m.Spec.Config.NginxConfigMapName,
+						{Name: names.PluginServingCert,
+							Secret: &corev1.SecretVolumeSource{SecretName: names.PluginServingCert, DefaultMode: new(int32(420))}},
+						{Name: names.NginxConfigMap,
 							ConfigMap: &corev1.ConfigMapVolumeSource{
-								Name: m.Spec.Config.NginxConfigMapName,
+								Name: names.NginxConfigMap,
 							}},
 					},
 				},
@@ -85,21 +84,20 @@ func PluginDeployment(m *Context) *appsv1.Deployment {
 }
 
 func PluginService(m *Context) *corev1.Service {
-	plugin := m.Spec.Plugin
 	return &corev1.Service{
-		Name:      plugin.ServiceName,
+		Name:      names.PluginService,
 		Namespace: m.OperandNamespace,
 		Labels:    labels.Plugin(m.CR),
 		Annotations: map[string]string{
-			"service.beta.openshift.io/serving-cert-secret-name": plugin.ServingCertSecret,
+			"service.beta.openshift.io/serving-cert-secret-name": names.PluginServingCert,
 		},
 		Spec: corev1.ServiceSpec{
 			Type:     corev1.ServiceTypeClusterIP,
 			Selector: labels.PluginSelector(m.CR),
 			Ports: []corev1.ServicePort{{
-				Name:       plugin.Name + "-port",
-				Port:       plugin.Port,
-				TargetPort: intstrFromInt32(plugin.Port),
+				Name:       names.PluginDeployment + "-port",
+				Port:       names.PluginPort,
+				TargetPort: intstrFromInt32(names.PluginPort),
 				Protocol:   corev1.ProtocolTCP,
 			}},
 		},
@@ -107,9 +105,9 @@ func PluginService(m *Context) *corev1.Service {
 }
 
 func PluginNetworkPolicy(m *Context) *networkingv1.NetworkPolicy {
-	port := intstrFromInt32(m.Spec.Plugin.Port)
+	port := intstrFromInt32(names.PluginPort)
 	return &networkingv1.NetworkPolicy{
-		Name:      "kubevirt-console-plugin-np",
+		Name:      names.PluginNetworkPolicy,
 		Namespace: m.OperandNamespace,
 		Labels:    labels.Plugin(m.CR),
 		Spec: networkingv1.NetworkPolicySpec{

@@ -57,6 +57,12 @@ spec:
         env:
         - name: OPERAND_NAMESPACE
           value: kubevirt-ui
+        - name: HCO_NAMESPACE
+          value: openshift-cnv
+        - name: KUBEVIRT_CONSOLE_PLUGIN_IMAGE
+          value: quay.io/kubevirt-ui/kubevirt-plugin:latest
+        - name: KUBEVIRT_APISERVER_PROXY_IMAGE
+          value: quay.io/kubevirt-ui/kubevirt-apiserver-proxy:latest
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:

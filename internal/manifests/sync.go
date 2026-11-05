@@ -15,16 +15,16 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
+	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/features"
+	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/hcoversion"
 	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/manifests/builders"
-	"k8s.io/utils/ptr"
+	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/names"
 )
 
 // ReconcileStack applies Helm-parity operands for the effective spec in Context.
 func ReconcileStack(ctx context.Context, c client.Client, scheme *runtime.Scheme, m *Context) error {
-	if pc := builders.PriorityClass(m); pc != nil {
-		if err := reconcileCluster(ctx, c, func() client.Object { return builders.PriorityClass(m) }); err != nil {
-			return err
-		}
+	if err := reconcileCluster(ctx, c, func() client.Object { return builders.PriorityClass(m) }); err != nil {
+		return err
 	}
 
 	steps := []func() error{
@@ -41,7 +41,7 @@ func ReconcileStack(ctx context.Context, c client.Client, scheme *runtime.Scheme
 			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.UserSettingsConfigMap(m) })
 		},
 		func() error {
-			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.FeaturesConfigMap(m) })
+			return reconcileFeaturesConfigMap(ctx, c, scheme, m)
 		},
 		func() error {
 			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.PluginDeployment(m) })
@@ -61,39 +61,19 @@ func ReconcileStack(ctx context.Context, c client.Client, scheme *runtime.Scheme
 		func() error {
 			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.ConfigReaderRoleBinding(m) })
 		},
-	}
-	if ptr.Deref(m.Spec.NetworkPolicy.Enabled, true) {
-		steps = append(steps,
-			func() error {
-				return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.PluginNetworkPolicy(m) })
-			},
-			func() error {
-				return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.ProxyNetworkPolicy(m) })
-			},
-		)
-	} else {
-		steps = append(steps,
-			func() error {
-				return deleteNamespaced(ctx, c, m.OperandNamespace, "kubevirt-console-plugin-np", &networkingv1.NetworkPolicy{})
-			},
-			func() error {
-				return deleteNamespaced(ctx, c, m.OperandNamespace, "kubevirt-apiserver-proxy-np", &networkingv1.NetworkPolicy{})
-			},
-		)
-	}
-	if ptr.Deref(m.Spec.Route.Enabled, true) {
-		steps = append(steps, func() error {
+		func() error {
+			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.PluginNetworkPolicy(m) })
+		},
+		func() error {
+			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.ProxyNetworkPolicy(m) })
+		},
+		func() error {
 			return reconcileNamespaced(ctx, c, scheme, m, func() client.Object { return builders.ProxyRoute(m) })
-		})
-	} else {
-		steps = append(steps, func() error {
-			return deleteNamespaced(ctx, c, m.OperandNamespace, m.Spec.Route.Name, &routev1.Route{})
-		})
+		},
+		func() error {
+			return reconcileCluster(ctx, c, func() client.Object { return builders.ConsolePlugin(m) })
+		},
 	}
-
-	steps = append(steps, func() error {
-		return reconcileCluster(ctx, c, func() client.Object { return builders.ConsolePlugin(m) })
-	})
 
 	for _, step := range steps {
 		if err := step(); err != nil {
@@ -101,6 +81,26 @@ func ReconcileStack(ctx context.Context, c client.Client, scheme *runtime.Scheme
 		}
 	}
 	return nil
+}
+
+func reconcileFeaturesConfigMap(ctx context.Context, c client.Client, scheme *runtime.Scheme, m *Context) error {
+	hcoVersion := ""
+	if m.HCOInstalled {
+		var err error
+		hcoVersion, err = hcoversion.OperatorVersion(ctx, c, m.HCONamespace)
+		if err != nil {
+			hcoVersion = ""
+		}
+	}
+	cm := &corev1.ConfigMap{}
+	cm.Name = names.FeaturesConfigMap
+	cm.Namespace = m.OperandNamespace
+	_, err := controllerutil.CreateOrUpdate(ctx, c, cm, func() error {
+		cm.Labels = builders.FeaturesConfigMapShell(m, nil).Labels
+		cm.Data = features.MergeData(cm.Data, hcoVersion)
+		return controllerutil.SetControllerReference(m.CR, cm, scheme)
+	})
+	return err
 }
 
 func reconcileNamespaced(ctx context.Context, c client.Client, scheme *runtime.Scheme, m *Context, build func() client.Object) error {
