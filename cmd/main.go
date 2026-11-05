@@ -66,7 +66,12 @@ func main() {
 		setupLog.Error(err, "unable to create startup client")
 		os.Exit(1)
 	}
-	opCfg.HCOInstalled = hcoversion.Installed(context.Background(), startupClient)
+	hcoInstalled, err := hcoversion.Installed(context.Background(), startupClient)
+	if err != nil {
+		setupLog.Error(err, "unable to detect HyperConverged CRD")
+		os.Exit(1)
+	}
+	opCfg.HCOInstalled = hcoInstalled
 
 	setupLog.Info("operator configuration",
 		"operandNamespace", opCfg.OperandNamespace,

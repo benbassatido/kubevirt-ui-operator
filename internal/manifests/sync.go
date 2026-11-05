@@ -10,7 +10,6 @@ import (
 	networkingv1 "k8s.io/api/networking/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	schedulingv1 "k8s.io/api/scheduling/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -85,11 +84,18 @@ func ReconcileStack(ctx context.Context, c client.Client, scheme *runtime.Scheme
 
 func reconcileFeaturesConfigMap(ctx context.Context, c client.Client, scheme *runtime.Scheme, m *Context) error {
 	hcoVersion := ""
-	if m.HCOInstalled {
-		var err error
-		hcoVersion, err = hcoversion.OperatorVersion(ctx, c, m.HCONamespace)
+	manageHCOVersion := false
+	if m.HCONamespace != "" {
+		installed, err := hcoversion.Installed(ctx, c)
 		if err != nil {
-			hcoVersion = ""
+			return err
+		}
+		if installed {
+			manageHCOVersion = true
+			hcoVersion, err = hcoversion.OperatorVersion(ctx, c, m.HCONamespace)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	cm := &corev1.ConfigMap{}
@@ -97,7 +103,7 @@ func reconcileFeaturesConfigMap(ctx context.Context, c client.Client, scheme *ru
 	cm.Namespace = m.OperandNamespace
 	_, err := controllerutil.CreateOrUpdate(ctx, c, cm, func() error {
 		cm.Labels = builders.FeaturesConfigMapShell(m, nil).Labels
-		cm.Data = features.MergeData(cm.Data, hcoVersion)
+		cm.Data = features.MergeData(cm.Data, hcoVersion, manageHCOVersion)
 		return controllerutil.SetControllerReference(m.CR, cm, scheme)
 	})
 	return err
@@ -124,16 +130,6 @@ func reconcileCluster(ctx context.Context, c client.Client, build func() client.
 		copySpec(obj, fresh)
 		return nil
 	})
-	return err
-}
-
-func deleteNamespaced(ctx context.Context, c client.Client, ns, name string, obj client.Object) error {
-	obj.SetNamespace(ns)
-	obj.SetName(name)
-	err := c.Delete(ctx, obj)
-	if errors.IsNotFound(err) {
-		return nil
-	}
 	return err
 }
 

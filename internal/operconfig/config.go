@@ -41,10 +41,11 @@ func LoadFromEnv() Config {
 }
 
 func hcoNamespaceFromEnv() string {
-	if ns := strings.TrimSpace(os.Getenv(EnvHCONamespace)); ns != "" {
-		return ns
+	v, ok := os.LookupEnv(EnvHCONamespace)
+	if !ok {
+		return DefaultHCONamespace
 	}
-	return DefaultHCONamespace
+	return strings.TrimSpace(v)
 }
 
 func operandNamespaceFromEnv() string {

@@ -17,6 +17,26 @@ func TestOperandNamespaceFromEnv(t *testing.T) {
 	}
 }
 
+func TestHCONamespaceFromEnv(t *testing.T) {
+	t.Setenv(EnvHCONamespace, "")
+	if got := hcoNamespaceFromEnv(); got != "" {
+		t.Fatalf("explicit empty: got %q want empty", got)
+	}
+
+	t.Setenv(EnvHCONamespace, "custom-hco")
+	if got := hcoNamespaceFromEnv(); got != "custom-hco" {
+		t.Fatalf("explicit namespace: got %q", got)
+	}
+}
+
+func TestLoadFromEnv_hcoNamespaceExplicitEmpty(t *testing.T) {
+	t.Setenv(EnvHCONamespace, "")
+	cfg := LoadFromEnv()
+	if cfg.HCONamespace != "" {
+		t.Fatalf("explicit empty HCO namespace: got %q", cfg.HCONamespace)
+	}
+}
+
 func TestLoadFromEnv_images(t *testing.T) {
 	t.Setenv(EnvPluginImage, "plugin:tag")
 	t.Setenv(EnvProxyImage, "proxy:tag")

@@ -14,7 +14,7 @@ func ConfigReaderRole(m *Context) *rbacv1.Role {
 		Labels:    labels.UIConfig(m.CR),
 		Rules: []rbacv1.PolicyRule{
 			{
-				Verbs:         []string{"get"},
+				Verbs:         []string{"get", "update", "patch"},
 				APIGroups:     []string{""},
 				Resources:     []string{"configmaps"},
 				ResourceNames: []string{names.UserSettingsConfigMap},

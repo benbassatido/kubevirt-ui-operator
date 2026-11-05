@@ -13,13 +13,13 @@ import (
 const CRDName = "hyperconvergeds.hco.kubevirt.io"
 
 // Installed reports whether the HyperConverged CRD is registered on the cluster.
-func Installed(ctx context.Context, c client.Client) bool {
+func Installed(ctx context.Context, c client.Client) (bool, error) {
 	crd := &apiextensionsv1.CustomResourceDefinition{}
 	if err := c.Get(ctx, client.ObjectKey{Name: CRDName}, crd); err != nil {
 		if apierrors.IsNotFound(err) || meta.IsNoMatchError(err) {
-			return false
+			return false, nil
 		}
-		return false
+		return false, err
 	}
-	return true
+	return true, nil
 }

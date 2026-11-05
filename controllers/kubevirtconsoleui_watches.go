@@ -7,6 +7,7 @@ import (
 	operatorv1 "github.com/openshift/api/operator/v1"
 	corev1 "k8s.io/api/core/v1"
 	schedulingv1 "k8s.io/api/scheduling/v1"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -38,6 +39,14 @@ func (r *KubeVirtConsoleUIReconciler) mapConsoleToRequests(ctx context.Context, 
 func (r *KubeVirtConsoleUIReconciler) mapFeaturesConfigMapToRequests(ctx context.Context, obj client.Object) []reconcile.Request {
 	cm, ok := obj.(*corev1.ConfigMap)
 	if !ok || cm.GetNamespace() != r.Config.OperandNamespace || cm.GetName() != names.FeaturesConfigMap {
+		return nil
+	}
+	return r.enqueueClusterCR()
+}
+
+func (r *KubeVirtConsoleUIReconciler) mapHyperConvergedCRDToRequests(ctx context.Context, obj client.Object) []reconcile.Request {
+	crd, ok := obj.(*apiextensionsv1.CustomResourceDefinition)
+	if !ok || crd.GetName() != hcoversion.CRDName {
 		return nil
 	}
 	return r.enqueueClusterCR()

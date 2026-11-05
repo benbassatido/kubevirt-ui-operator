@@ -20,8 +20,9 @@ func TestInstalled_crdPresent(t *testing.T) {
 	}
 	c := fake.NewClientBuilder().WithScheme(scheme).WithObjects(crd).Build()
 
-	if !Installed(context.Background(), c) {
-		t.Fatal("expected HCO installed when CRD exists")
+	installed, err := Installed(context.Background(), c)
+	if err != nil || !installed {
+		t.Fatalf("expected HCO installed when CRD exists, err=%v installed=%v", err, installed)
 	}
 }
 
@@ -30,7 +31,8 @@ func TestInstalled_crdMissing(t *testing.T) {
 	_ = apiextensionsv1.AddToScheme(scheme)
 	c := fake.NewClientBuilder().WithScheme(scheme).Build()
 
-	if Installed(context.Background(), c) {
-		t.Fatal("expected HCO not installed when CRD is absent")
+	installed, err := Installed(context.Background(), c)
+	if err != nil || installed {
+		t.Fatalf("expected HCO not installed when CRD is absent, err=%v installed=%v", err, installed)
 	}
 }

@@ -37,7 +37,7 @@ func CacheOptions(cfg Config) cache.Options {
 			Field: fields.OneTermEqualSelector("metadata.name", platform.ConsolePluginCRDName),
 		},
 	}
-	if cfg.HCOInstalled && cfg.HCONamespace != "" {
+	if cfg.HCONamespace != "" {
 		byObject[&hcoversion.HyperConverged{}] = cache.ByObject{
 			Namespaces: map[string]cache.Config{
 				cfg.HCONamespace: {},

@@ -37,8 +37,6 @@ app.kubernetes.io/component: {{ $component }}
 app.kubernetes.io/component: kubevirt-console-plugin
 {{- if .Values.hcoLabels.enabled }}
 app: {{ .Values.hcoLabels.app }}
-{{- else }}
-app: kubevirt-console-ui
 {{- end }}
 {{- end }}
 
@@ -46,7 +44,5 @@ app: kubevirt-console-ui
 app.kubernetes.io/component: kubevirt-apiserver-proxy
 {{- if .Values.hcoLabels.enabled }}
 app: {{ .Values.hcoLabels.app }}
-{{- else }}
-app: kubevirt-console-ui
 {{- end }}
 {{- end }}

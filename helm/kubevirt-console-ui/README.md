@@ -56,6 +56,8 @@ CNV namespace (HCO-aligned labels optional via `hcoLabels.enabled=true`):
 ```bash
 helm upgrade --install kubevirt-ui ./helm/kubevirt-console-ui \
   --namespace openshift-cnv \
+  --set namespace=openshift-cnv \
+  --set createNamespace=false \
   --set hcoLabels.enabled=true \
   --set plugin.image=quay.io/kubevirt-ui/kubevirt-plugin:<tag> \
   --set proxy.image=quay.io/kubevirt-ui/kubevirt-apiserver-proxy:<tag>

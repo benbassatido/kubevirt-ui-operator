@@ -28,9 +28,10 @@ func DefaultData() map[string]string {
 	}
 }
 
-// MergeData preserves existing ConfigMap data, fills missing default keys, and sets hcoVersion only when
-// HCO operator version was discovered. When undetermined, hcoVersion is omitted from the ConfigMap.
-func MergeData(existing map[string]string, hcoVersion string) map[string]string {
+// MergeData preserves existing ConfigMap data and fills missing default keys.
+// When manageHCOVersion is true, sets or removes hcoVersion from the merged data.
+// When manageHCOVersion is false, an existing hcoVersion entry is left unchanged.
+func MergeData(existing map[string]string, hcoVersion string, manageHCOVersion bool) map[string]string {
 	out := maps.Clone(existing)
 	if out == nil {
 		out = make(map[string]string, len(DefaultData()))
@@ -39,6 +40,9 @@ func MergeData(existing map[string]string, hcoVersion string) map[string]string 
 		if _, ok := out[k]; !ok {
 			out[k] = v
 		}
+	}
+	if !manageHCOVersion {
+		return out
 	}
 	if hcoVersion != "" {
 		out[KeyHCOVersion] = hcoVersion
