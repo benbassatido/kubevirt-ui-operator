@@ -47,7 +47,8 @@ jobs:
             ${{ runner.os }}-go-toolchain-
       - uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod
+          # Match go.mod's `toolchain` line; go-version-file uses only the `go` directive (1.22.0).
+          go-version: '1.22.5'
           # Module download + go build cache (keyed on go.sum).
           cache: true
       - name: Test
