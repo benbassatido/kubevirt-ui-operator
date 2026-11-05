@@ -12,14 +12,15 @@ import (
 	operatorv1 "github.com/openshift/api/operator/v1"
 )
 
-const consolePluginCRDName = "consoleplugins.console.openshift.io"
+// ConsolePluginCRDName is the OpenShift ConsolePlugin CRD resource name.
+const ConsolePluginCRDName = "consoleplugins.console.openshift.io"
 
 // ConsoleRequirements reports whether the cluster exposes OpenShift/OKD console APIs.
 func ConsoleRequirements(ctx context.Context, c client.Client) (met bool, reason, message string) {
 	crd := &apiextensionsv1.CustomResourceDefinition{}
-	if err := c.Get(ctx, types.NamespacedName{Name: consolePluginCRDName}, crd); err != nil {
+	if err := c.Get(ctx, types.NamespacedName{Name: ConsolePluginCRDName}, crd); err != nil {
 		if errors.IsNotFound(err) {
-			return false, "ConsolePluginCRDMissing", fmt.Sprintf("CRD %s is not installed (OpenShift/OKD console required)", consolePluginCRDName)
+			return false, "ConsolePluginCRDMissing", fmt.Sprintf("CRD %s is not installed (OpenShift/OKD console required)", ConsolePluginCRDName)
 		}
 		return false, "ConsolePluginCRDLookupFailed", err.Error()
 	}
