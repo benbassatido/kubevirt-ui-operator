@@ -38,9 +38,17 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      # Restore setup-go's toolchain dir so we skip re-downloading the Go SDK each run.
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.tool_cache }}/go
+          key: ${{ runner.os }}-go-toolchain-${{ hashFiles('go.mod') }}
+          restore-keys: |
+            ${{ runner.os }}-go-toolchain-
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+          # Module download + go build cache (keyed on go.sum).
           cache: true
       - name: Test
         run: go test ./...
