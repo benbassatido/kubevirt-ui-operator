@@ -51,6 +51,8 @@ Planned additions: envtest/e2e on OpenShift, published operator image defaults, 
 
 Prerequisites:
 
+
+
 - **OpenShift Console:** Console Operator healthy, `ConsolePlugin` CRD (`console.openshift.io`), console UI running in `openshift-console`; cluster admin or equivalent if enabling automatic plugin registration on `consoles.operator.openshift.io/cluster`
 - Namespace `openshift-cnv` (or override in values)—do **not** install on top of an existing HCO-managed UI in the same namespace
 - KubeVirt API available to users (RBAC + running control plane)
