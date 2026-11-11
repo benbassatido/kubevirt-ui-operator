@@ -1,6 +1,6 @@
 KubeVirt Console UI installed in namespace {{ include "kubevirt-console-ui.namespace" . }}.
 
-Resources mirror HCO UI operands:
+Resources mirror the operator UI stack (and HCO when `hcoLabels.enabled`):
   - Deployments: {{ .Values.plugin.name }}, {{ .Values.proxy.name }}
   - Services (TLS serving certs): {{ .Values.plugin.serviceName }}, {{ .Values.proxy.serviceName }}
   - ConfigMaps: {{ .Values.config.nginxConfigMapName }}, {{ .Values.config.userSettingsConfigMapName }}, {{ .Values.config.featuresConfigMapName }}

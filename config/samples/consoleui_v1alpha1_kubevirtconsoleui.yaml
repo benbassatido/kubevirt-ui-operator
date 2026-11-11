@@ -1,10 +1,5 @@
 apiVersion: consoleui.kubevirt.io/v1alpha1
 kind: KubeVirtConsoleUI
 metadata:
-  name: kubevirt-console-ui
-  namespace: openshift-cnv
-spec:
-  plugin:
-    image: quay.io/kubevirtui/kubevirt-plugin:latest
-  proxy:
-    image: quay.io/kubevirtui/kubevirt-apiserver-proxy:latest
+  name: cluster
+spec: {}

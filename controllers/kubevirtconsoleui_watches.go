@@ -5,97 +5,60 @@ import (
 
 	consolev1 "github.com/openshift/api/console/v1"
 	operatorv1 "github.com/openshift/api/operator/v1"
+	corev1 "k8s.io/api/core/v1"
 	schedulingv1 "k8s.io/api/scheduling/v1"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	consoleuiv1alpha1 "github.com/kubevirt-ui/kubevirt-ui-operator/api/v1alpha1"
-	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/manifests"
-	"k8s.io/utils/ptr"
+	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/hcoversion"
+	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/names"
 )
 
 func (r *KubeVirtConsoleUIReconciler) mapConsolePluginToRequests(ctx context.Context, obj client.Object) []reconcile.Request {
-	cp, ok := obj.(*consolev1.ConsolePlugin)
-	if !ok {
-		return nil
+	if cp, ok := obj.(*consolev1.ConsolePlugin); ok && cp.GetName() == names.ConsolePluginName {
+		return r.enqueueClusterCR()
 	}
-	return r.requestsForConsolePluginName(ctx, cp.GetName())
+	return nil
 }
 
 func (r *KubeVirtConsoleUIReconciler) mapPriorityClassToRequests(ctx context.Context, obj client.Object) []reconcile.Request {
-	pc, ok := obj.(*schedulingv1.PriorityClass)
-	if !ok {
-		return nil
+	if pc, ok := obj.(*schedulingv1.PriorityClass); ok && pc.GetName() == names.PriorityClass {
+		return r.enqueueClusterCR()
 	}
-	return r.requestsForPriorityClassName(ctx, pc.GetName())
+	return nil
 }
 
 func (r *KubeVirtConsoleUIReconciler) mapConsoleToRequests(ctx context.Context, obj client.Object) []reconcile.Request {
-	console, ok := obj.(*operatorv1.Console)
-	if !ok || console.GetName() != "cluster" {
-		return nil
+	if console, ok := obj.(*operatorv1.Console); ok && console.GetName() == "cluster" {
+		return r.enqueueClusterCR()
 	}
-	return r.requestsForConsoleRegistration(ctx)
+	return nil
 }
 
-func (r *KubeVirtConsoleUIReconciler) requestsForConsolePluginName(ctx context.Context, pluginName string) []reconcile.Request {
-	list, err := r.listConsoleUIs(ctx)
-	if err != nil {
+func (r *KubeVirtConsoleUIReconciler) mapFeaturesConfigMapToRequests(ctx context.Context, obj client.Object) []reconcile.Request {
+	cm, ok := obj.(*corev1.ConfigMap)
+	if !ok || cm.GetNamespace() != r.Config.OperandNamespace || cm.GetName() != names.FeaturesConfigMap {
 		return nil
 	}
-	var out []reconcile.Request
-	for i := range list.Items {
-		cr := &list.Items[i]
-		mctx := manifests.NewContext(cr)
-		if mctx.Spec.ConsolePlugin.Name == pluginName {
-			out = append(out, reconcile.Request{NamespacedName: client.ObjectKeyFromObject(cr)})
-		}
-	}
-	return out
+	return r.enqueueClusterCR()
 }
 
-func (r *KubeVirtConsoleUIReconciler) requestsForPriorityClassName(ctx context.Context, priorityClassName string) []reconcile.Request {
-	list, err := r.listConsoleUIs(ctx)
-	if err != nil {
+func (r *KubeVirtConsoleUIReconciler) mapHyperConvergedCRDToRequests(ctx context.Context, obj client.Object) []reconcile.Request {
+	crd, ok := obj.(*apiextensionsv1.CustomResourceDefinition)
+	if !ok || crd.GetName() != hcoversion.CRDName {
 		return nil
 	}
-	var out []reconcile.Request
-	for i := range list.Items {
-		cr := &list.Items[i]
-		mctx := manifests.NewContext(cr)
-		if !ptr.Deref(mctx.Spec.PriorityClass.Create, true) {
-			continue
-		}
-		if mctx.Spec.PriorityClass.Name == priorityClassName {
-			out = append(out, reconcile.Request{NamespacedName: client.ObjectKeyFromObject(cr)})
-		}
-	}
-	return out
+	return r.enqueueClusterCR()
 }
 
-func (r *KubeVirtConsoleUIReconciler) requestsForConsoleRegistration(ctx context.Context) []reconcile.Request {
-	list, err := r.listConsoleUIs(ctx)
-	if err != nil {
-		return nil
+func (r *KubeVirtConsoleUIReconciler) mapHyperConvergedToRequests(ctx context.Context, obj client.Object) []reconcile.Request {
+	if _, ok := obj.(*hcoversion.HyperConverged); ok {
+		return r.enqueueClusterCR()
 	}
-	var out []reconcile.Request
-	for i := range list.Items {
-		cr := &list.Items[i]
-		mctx := manifests.NewContext(cr)
-		if !ptr.Deref(mctx.Spec.Console.RegisterPlugin, true) {
-			continue
-		}
-		out = append(out, reconcile.Request{NamespacedName: client.ObjectKeyFromObject(cr)})
-	}
-	return out
+	return nil
 }
 
-func (r *KubeVirtConsoleUIReconciler) listConsoleUIs(ctx context.Context) (consoleuiv1alpha1.KubeVirtConsoleUIList, error) {
-	var list consoleuiv1alpha1.KubeVirtConsoleUIList
-	if err := r.List(ctx, &list); err != nil {
-		log.FromContext(ctx).Error(err, "list KubeVirtConsoleUI for secondary watch")
-		return list, err
-	}
-	return list, nil
+func (r *KubeVirtConsoleUIReconciler) enqueueClusterCR() []reconcile.Request {
+	return []reconcile.Request{{Name: names.ResourceName}}
 }

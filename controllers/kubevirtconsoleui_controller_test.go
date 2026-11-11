@@ -12,6 +12,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	consoleuiv1alpha1 "github.com/kubevirt-ui/kubevirt-ui-operator/api/v1alpha1"
+	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/names"
 	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/operconfig"
 )
 
@@ -19,6 +20,7 @@ func TestReconcilePlatformRequirementsNotMetWithoutOpenShiftConsole(t *testing.T
 	ctx := t.Context()
 	ns := "reconcile-test"
 	t.Setenv(operconfig.EnvOperandNamespace, ns)
+
 	if err := k8sClient.Create(ctx, &corev1.Namespace{Name: ns}); err != nil {
 		t.Fatalf("create namespace: %v", err)
 	}
@@ -31,24 +33,24 @@ func TestReconcilePlatformRequirementsNotMetWithoutOpenShiftConsole(t *testing.T
 	})
 
 	cr := &consoleuiv1alpha1.KubeVirtConsoleUI{
-		Name:      "test-ui",
-		Namespace: ns,
+		Name: names.ResourceName,
 	}
 	if err := k8sClient.Create(ctx, cr); err != nil {
 		t.Fatalf("create CR: %v", err)
 	}
 
 	r := &KubeVirtConsoleUIReconciler{
-		Client: k8sClient,
-		Scheme: testScheme,
-		Config: operconfig.LoadFromEnv(),
+		Client:    k8sClient,
+		APIReader: k8sClient,
+		Scheme:    testScheme,
+		Config:    operconfig.LoadFromEnv(),
 	}
-	if _, err := r.Reconcile(ctx, ctrl.Request{NamespacedName: client.ObjectKeyFromObject(cr)}); err != nil {
+	if _, err := r.Reconcile(ctx, ctrl.Request{Name: names.ResourceName}); err != nil {
 		t.Fatalf("reconcile: %v", err)
 	}
 
 	updated := &consoleuiv1alpha1.KubeVirtConsoleUI{}
-	if err := k8sClient.Get(ctx, client.ObjectKeyFromObject(cr), updated); err != nil {
+	if err := k8sClient.Get(ctx, client.ObjectKey{Name: names.ResourceName}, updated); err != nil {
 		t.Fatalf("get CR: %v", err)
 	}
 

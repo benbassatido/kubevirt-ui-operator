@@ -1,5 +1,5 @@
-# Operator manager namespace (HCO convention on CNV). Created on make deploy via config/namespace; not deleted on undeploy.
-namespace: openshift-cnv
+# Operator manager namespace (upstream). Downstream OLM overlays use openshift-virtualization-ui.
+namespace: kubevirt-ui
 
 # Value of this field is prepended to the
 # names of all resources, e.g. a deployment named

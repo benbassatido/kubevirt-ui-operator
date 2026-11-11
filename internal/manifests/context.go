@@ -1,9 +1,15 @@
 package manifests
 
-import "github.com/kubevirt-ui/kubevirt-ui-operator/internal/manifests/builders"
+import (
+	consoleuiv1alpha1 "github.com/kubevirt-ui/kubevirt-ui-operator/api/v1alpha1"
+	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/manifests/builders"
+	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/operconfig"
+)
 
-// Context holds operand manifest inputs after spec defaults (see builders package).
+// Context is the manifest reconciliation context.
 type Context = builders.Context
 
 // NewContext deep-copies the CR and applies default spec values for manifest generation.
-var NewContext = builders.NewContext
+func NewContext(cr *consoleuiv1alpha1.KubeVirtConsoleUI, cfg operconfig.Config) *Context {
+	return builders.NewContext(cr, cfg)
+}

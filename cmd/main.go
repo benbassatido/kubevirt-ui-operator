@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
 
@@ -12,6 +13,7 @@ import (
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
@@ -22,6 +24,7 @@ import (
 
 	consoleuiv1alpha1 "github.com/kubevirt-ui/kubevirt-ui-operator/api/v1alpha1"
 	"github.com/kubevirt-ui/kubevirt-ui-operator/controllers"
+	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/hcoversion"
 	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/operconfig"
 )
 
@@ -34,6 +37,7 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 	utilruntime.Must(apiextensionsv1.AddToScheme(scheme))
 	utilruntime.Must(consoleuiv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(hcoversion.AddToScheme(scheme))
 	utilruntime.Must(consolev1.AddToScheme(scheme))
 	utilruntime.Must(operatorv1.AddToScheme(scheme))
 	utilruntime.Must(routev1.AddToScheme(scheme))
@@ -55,9 +59,29 @@ func main() {
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
 	opCfg := operconfig.LoadFromEnv()
-	setupLog.Info("operator configuration", "operandNamespace", opCfg.OperandNamespace)
 
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+	restConfig := ctrl.GetConfigOrDie()
+	startupClient, err := client.New(restConfig, client.Options{Scheme: scheme})
+	if err != nil {
+		setupLog.Error(err, "unable to create startup client")
+		os.Exit(1)
+	}
+	hcoInstalled, err := hcoversion.Installed(context.Background(), startupClient)
+	if err != nil {
+		setupLog.Error(err, "unable to detect HyperConverged CRD")
+		os.Exit(1)
+	}
+	opCfg.HCOInstalled = hcoInstalled
+
+	setupLog.Info("operator configuration",
+		"operandNamespace", opCfg.OperandNamespace,
+		"hcoNamespace", opCfg.HCONamespace,
+		"hcoInstalled", opCfg.HCOInstalled,
+		"pluginImage", opCfg.PluginImage,
+		"proxyImage", opCfg.ProxyImage,
+	)
+
+	mgr, err := ctrl.NewManager(restConfig, ctrl.Options{
 		Scheme: scheme,
 		Cache:  operconfig.CacheOptions(opCfg),
 		Metrics: metricsserver.Options{
@@ -73,9 +97,10 @@ func main() {
 	}
 
 	if err = (&controllers.KubeVirtConsoleUIReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-		Config: opCfg,
+		Client:    mgr.GetClient(),
+		APIReader: mgr.GetAPIReader(),
+		Scheme:    mgr.GetScheme(),
+		Config:    opCfg,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "KubeVirtConsoleUI")
 		os.Exit(1)

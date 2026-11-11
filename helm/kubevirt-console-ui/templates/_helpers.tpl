@@ -21,7 +21,9 @@ app.kubernetes.io/part-of: {{ .Values.hcoLabels.partOf }}
 app.kubernetes.io/version: {{ . | quote }}
 {{- end }}
 {{- else }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
+app: kubevirt-console-ui
+app.kubernetes.io/managed-by: kubevirt-ui-operator
+app.kubernetes.io/part-of: kubevirt-ui
 {{- end }}
 {{- end }}
 

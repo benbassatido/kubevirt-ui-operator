@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Create the namespace required by the sample CR, then apply it.
+# Create the operand namespace (OPERAND_NAMESPACE) and apply the cluster-scoped sample CR.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -10,14 +10,9 @@ if [[ ! -f "${SAMPLE}" ]]; then
   exit 1
 fi
 
-namespace="$(kubectl create -f "${SAMPLE}" --dry-run=client -o jsonpath='{.metadata.namespace}')"
-
-if [[ -z "${namespace}" ]]; then
-  echo "could not read metadata.namespace from ${SAMPLE}" >&2
-  exit 1
-fi
+namespace="${OPERAND_NAMESPACE:-kubevirt-ui}"
 
 kubectl create namespace "${namespace}" --dry-run=client -o yaml | kubectl apply -f -
 
 kubectl apply -f "${SAMPLE}"
-echo "Applied ${SAMPLE} in namespace ${namespace}"
+echo "Applied ${SAMPLE} (cluster-scoped); operands use namespace ${namespace} (OPERAND_NAMESPACE)"

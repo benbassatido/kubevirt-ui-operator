@@ -5,4 +5,4 @@ metadata:
     control-plane: controller-manager
     app.kubernetes.io/name: kubevirt-ui-operator
     app.kubernetes.io/managed-by: kustomize
-  name: openshift-cnv
+  name: kubevirt-ui

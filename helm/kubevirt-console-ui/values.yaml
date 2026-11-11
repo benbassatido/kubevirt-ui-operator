@@ -1,41 +1,41 @@
-# Target namespace (CNV installs UI into openshift-cnv).
-namespace: openshift-cnv
-createNamespace: false
+# Operand namespace for UI resources (matches operator OPERAND_NAMESPACE default).
+namespace: kubevirt-ui
+createNamespace: true
 
-# Match HCO/CNV labels so resources align with operator-managed installs.
+# HCO-style labels (app: kubevirt-hyperconverged). Default false matches kubevirt-ui-operator operands.
 hcoLabels:
-  enabled: true
+  enabled: false
   app: kubevirt-hyperconverged
   managedBy: hco-operator
   partOf: hyperconverged-cluster
   version: ''
 
-# Cluster-scoped scheduling priority (same name/value as KubeVirt virt-operator).
-# Set create: false when CNV/KubeVirt already installed the PriorityClass.
+# Operator-owned cluster PriorityClass for UI pods (distinct from kubevirt-cluster-critical).
+# Set create: false when you provision the class out of band.
 priorityClass:
   create: true
-  name: kubevirt-cluster-critical
+  name: kubevirt-ui-cluster-critical
   value: 1000000000
   description: Priority class for critical KubeVirt and virtualization UI components
   preemptionPolicy: PreemptLowerPriority
 
 plugin:
   name: kubevirt-console-plugin
-  image: quay.io/kubevirtui/kubevirt-plugin:latest
+  image: quay.io/kubevirt-ui/kubevirt-plugin:latest
   port: 9443
   replicas: 1
   serviceName: kubevirt-console-plugin-service
   servingCertSecret: plugin-serving-cert
-  priorityClassName: kubevirt-cluster-critical
+  priorityClassName: kubevirt-ui-cluster-critical
 
 proxy:
   name: kubevirt-apiserver-proxy
-  image: quay.io/kubevirtui/kubevirt-apiserver-proxy:latest
+  image: quay.io/kubevirt-ui/kubevirt-apiserver-proxy:latest
   port: 8080
   replicas: 1
   serviceName: kubevirt-apiserver-proxy-service
   servingCertSecret: console-proxy-serving-cert
-  priorityClassName: kubevirt-cluster-critical
+  priorityClassName: kubevirt-ui-cluster-critical
   # Optional TLS flags passed to the proxy container (HCO sets these from cluster TLS profile).
   tlsArgs: []
 
@@ -57,6 +57,7 @@ config:
     nodePortAddress: ''
     nodePortEnabled: 'false'
     ipStackType: ''
+    # Omit or leave empty: hcoVersion is not written to the ConfigMap (operator discovers from HCO when installed).
     hcoVersion: ''
 
 console:

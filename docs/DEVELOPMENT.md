@@ -5,8 +5,8 @@
 ```bash
 helm lint ./helm/kubevirt-console-ui
 helm template kubevirt-ui ./helm/kubevirt-console-ui \
-  --set plugin.image=quay.io/kubevirtui/kubevirt-plugin:<tag> \
-  --set proxy.image=quay.io/kubevirtui/kubevirt-apiserver-proxy:<tag>
+  --set plugin.image=quay.io/kubevirt-ui/kubevirt-plugin:<tag> \
+  --set proxy.image=quay.io/kubevirt-ui/kubevirt-apiserver-proxy:<tag>
 ```
 
 Smoke install on OpenShift: see [helm/kubevirt-console-ui/README.md](../helm/kubevirt-console-ui/README.md).
@@ -51,14 +51,14 @@ make install
 make run                       # separate terminal
 ```
 
-Or create namespaces manually before `kubectl apply`:
+Or create the operand namespace manually before applying the cluster-scoped CR:
 
 ```bash
-kubectl create namespace openshift-cnv-test --dry-run=client -o yaml | kubectl apply -f -
+kubectl create namespace kubevirt-ui --dry-run=client -o yaml | kubectl apply -f -
 kubectl apply -f config/samples/consoleui_v1alpha1_kubevirtconsoleui.yaml
 ```
 
-Create the operand namespace before applying the CR (`scripts/apply-sample-cr.sh` uses `metadata.namespace` from the sample).
+`scripts/apply-sample-cr.sh` creates **`OPERAND_NAMESPACE`** (default **`kubevirt-ui`**) and applies the sample **`KubeVirtConsoleUI`** named **`cluster`** (cluster-scoped CRD).
 
 ### Deploy manager to the cluster
 
@@ -66,18 +66,18 @@ Create the operand namespace before applying the CR (`scripts/apply-sample-cr.sh
 make install     # CRD only (kustomize config/crd)
 export IMG=quay.io/<your-user>/kubevirt-ui-operator:dev
 make docker-build docker-push
-make deploy      # openshift-cnv Namespace (if missing), manager Deployment, RBAC, SA
+make deploy      # kubevirt-ui namespace (if missing), cluster-scoped CRD, manager Deployment, RBAC, SA
 ./scripts/apply-sample-cr.sh
 ```
 
-`make deploy` applies **`config/deploy`** (namespace, CRD, manager RBAC/Deployment). **`make undeploy`** deletes only **`config/default`**—the operator manager and its RBAC, not **`openshift-cnv`** and not the CRD—so existing **`KubeVirtConsoleUI`** objects stay on the cluster until you remove them or run **`make uninstall`**.
+`make deploy` applies **`config/deploy`** (operand/operator namespace, CRD, manager RBAC/Deployment). **`make undeploy`** deletes only **`config/default`**—the manager and its RBAC in **`kubevirt-ui`**, not the CRD—so existing **`KubeVirtConsoleUI`** objects stay on the cluster until you remove them or run **`make uninstall`**.
 
-The manager runs in **`openshift-cnv`** (HCO convention). The sample CR may use another namespace (e.g. `openshift-cnv-test`) for an isolated UI stack. Do not install UI operands on top of an existing HCO-managed stack in the same namespace.
+The manager runs in **`kubevirt-ui`** alongside UI operands ( **`OPERAND_NAMESPACE`** ). **`HCO_NAMESPACE`** (default **`openshift-cnv`**) is only used to read HyperConverged and patch **`hcoVersion`** on the features ConfigMap when CNV/HCO is installed. Do not install UI operands on top of HCO’s console plugin stack in **`openshift-cnv`**.
 
 Or manually:
 
 ```bash
-kubectl create namespace openshift-cnv-test --dry-run=client -o yaml | kubectl apply -f -
+kubectl create namespace kubevirt-ui --dry-run=client -o yaml | kubectl apply -f -
 kubectl apply -f config/samples/consoleui_v1alpha1_kubevirtconsoleui.yaml
 ```
 
@@ -88,7 +88,7 @@ If `make deploy` fails building `controller-gen`, ensure Go 1.27+ and use the Ma
 Undeploy the operator manager (CRD and CRs remain):
 
 ```bash
-make undeploy    # Deployment, RBAC, metrics Service in openshift-cnv — not the namespace or CRD
+make undeploy    # Deployment, RBAC, metrics Service in kubevirt-ui — not the namespace or CRD
 ```
 
 Remove the API (deletes **all** `KubeVirtConsoleUI` instances cluster-wide):

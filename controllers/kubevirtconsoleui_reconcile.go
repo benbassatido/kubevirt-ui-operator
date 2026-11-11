@@ -10,7 +10,6 @@ import (
 	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/manifests"
 	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/platform"
 	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/status"
-	"k8s.io/utils/ptr"
 )
 
 func (r *KubeVirtConsoleUIReconciler) reconcile(
@@ -24,16 +23,13 @@ func (r *KubeVirtConsoleUIReconciler) reconcile(
 
 	var reconcileErr error
 	if met {
-		reconcileErr = manifests.ReconcileStack(ctx, r.Client, r.Scheme, mctx)
+		reconcileErr = manifests.ReconcileStack(ctx, r.Client, r.APIReader, r.Scheme, mctx)
 	} else {
 		reconcileErr = fmt.Errorf("%s: %s", reason, message)
 	}
 
 	if reconcileErr != nil {
 		return reconcileErr
-	}
-	if !ptr.Deref(mctx.Spec.Console.RegisterPlugin, true) {
-		return nil
 	}
 
 	registered, regErr := r.reconcileConsoleRegistration(ctx, mctx)

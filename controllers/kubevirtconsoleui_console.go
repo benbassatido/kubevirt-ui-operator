@@ -8,10 +8,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/manifests"
+	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/names"
 )
 
 func (r *KubeVirtConsoleUIReconciler) reconcileConsoleRegistration(ctx context.Context, m *manifests.Context) (bool, error) {
-	pluginName := m.Spec.ConsolePlugin.Name
+	pluginName := names.ConsolePluginName
 	console := &operatorv1.Console{}
 	if err := r.Get(ctx, client.ObjectKey{Name: "cluster"}, console); err != nil {
 		return false, err

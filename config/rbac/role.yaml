@@ -77,6 +77,14 @@ rules:
   - patch
   - update
 - apiGroups:
+  - hco.kubevirt.io
+  resources:
+  - hyperconvergeds
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - networking.k8s.io
   resources:
   - networkpolicies

@@ -30,7 +30,7 @@ jobs:
           permission-issues: write
 
       - name: Validate PR title against Jira
-        uses: kubevirt-ui/kubevirt-validation@0d2078faef5bc1f8e6388444d769b5581a7e9969
+        uses: kubevirt-ui/kubevirt-validation@f9429931c4e04aad456c76a070325409a0b8af2b
         with:
           base-branch: ${{ github.event.pull_request.base.ref }}
           head-sha: ${{ github.event.pull_request.head.sha }}
