@@ -6,7 +6,7 @@ const (
 	// ResourceName is the required name of the cluster-scoped KubeVirtConsoleUI instance.
 	ResourceName = "cluster"
 
-	PriorityClass = "kubevirt-cluster-critical"
+	PriorityClass = "kubevirt-ui-cluster-critical"
 
 	PluginDeployment    = "kubevirt-console-plugin"
 	PluginService       = "kubevirt-console-plugin-service"

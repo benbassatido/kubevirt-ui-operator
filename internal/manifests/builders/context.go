@@ -8,13 +8,13 @@ import (
 
 // Context holds a deep copy of the CR after defaults.Apply. Operands deploy in OperandNamespace from operator config.
 type Context struct {
-	CR               *consoleuiv1alpha1.KubeVirtConsoleUI
-	Spec             consoleuiv1alpha1.KubeVirtConsoleUISpec
-	OperandNamespace string
-	HCONamespace     string
-	HCOInstalled     bool
-	PluginImage      string
-	ProxyImage       string
+	CR                *consoleuiv1alpha1.KubeVirtConsoleUI
+	Spec              consoleuiv1alpha1.KubeVirtConsoleUISpec
+	OperandNamespace  string
+	HCONamespace      string
+	HCOInstalled      bool
+	PluginImage string
+	ProxyImage  string
 }
 
 // NewContext deep-copies the CR and applies default spec values for manifest generation.

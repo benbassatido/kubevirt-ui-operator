@@ -9,14 +9,13 @@ import (
 	"github.com/kubevirt-ui/kubevirt-ui-operator/internal/names"
 )
 
-// PriorityClass returns the cluster PriorityClass reconciled for the UI stack.
+// PriorityClass returns the operator-owned PriorityClass for the UI stack.
 func PriorityClass(m *Context) *schedulingv1.PriorityClass {
 	policy := corev1.PreemptLowerPriority
-	value := names.PriorityClassValue
 	return &schedulingv1.PriorityClass{
 		Name:             names.PriorityClass,
 		Labels:           labels.Base(m.CR),
-		Value:            value,
+		Value:            names.PriorityClassValue,
 		GlobalDefault:    false,
 		Description:      names.PriorityClassDescription,
 		PreemptionPolicy: &policy,

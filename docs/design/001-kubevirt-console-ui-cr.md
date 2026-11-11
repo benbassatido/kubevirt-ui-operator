@@ -38,7 +38,7 @@ Same as [ROADMAP — Prerequisites](../ROADMAP.md#prerequisites-cluster-and-cons
 | `networkPolicy.enabled` | Plugin/proxy NetworkPolicies |
 | `route.enabled`, `route.host` | Apiserver-proxy Route |
 | `console.registerPlugin` | Patch Console cluster config `spec.plugins` |
-| `priorityClass.create` | `kubevirt-cluster-critical` when needed |
+| `priorityClass.create` | `kubevirt-ui-cluster-critical` when needed |
 | `hcoLabels.enabled` | HCO-aligned labels for migration |
 
 ### Status

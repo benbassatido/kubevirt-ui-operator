@@ -10,11 +10,11 @@ hcoLabels:
   partOf: hyperconverged-cluster
   version: ''
 
-# Cluster-scoped scheduling priority (same name/value as KubeVirt virt-operator).
-# Set create: false when CNV/KubeVirt already installed the PriorityClass.
+# Operator-owned cluster PriorityClass for UI pods (distinct from kubevirt-cluster-critical).
+# Set create: false when you provision the class out of band.
 priorityClass:
   create: true
-  name: kubevirt-cluster-critical
+  name: kubevirt-ui-cluster-critical
   value: 1000000000
   description: Priority class for critical KubeVirt and virtualization UI components
   preemptionPolicy: PreemptLowerPriority
@@ -26,7 +26,7 @@ plugin:
   replicas: 1
   serviceName: kubevirt-console-plugin-service
   servingCertSecret: plugin-serving-cert
-  priorityClassName: kubevirt-cluster-critical
+  priorityClassName: kubevirt-ui-cluster-critical
 
 proxy:
   name: kubevirt-apiserver-proxy
@@ -35,7 +35,7 @@ proxy:
   replicas: 1
   serviceName: kubevirt-apiserver-proxy-service
   servingCertSecret: console-proxy-serving-cert
-  priorityClassName: kubevirt-cluster-critical
+  priorityClassName: kubevirt-ui-cluster-critical
   # Optional TLS flags passed to the proxy container (HCO sets these from cluster TLS profile).
   tlsArgs: []
 

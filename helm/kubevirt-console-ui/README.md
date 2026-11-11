@@ -67,7 +67,7 @@ Pin images to the same versions shipped with your CNV release (see HCO `deploy/i
 | `console.registerPlugin` | Helm hook patches `consoles.operator.openshift.io/cluster` |
 | `hcoLabels.enabled` | HCO-style labels (`app: kubevirt-hyperconverged`); default **`false`** (operator-owned labels) |
 | `config.features.hcoVersion` | Leave empty in Helm; the operator sets **`hcoVersion`** from **`HCO_NAMESPACE`** (default **`openshift-cnv`**) when HyperConverged is installed |
-| `priorityClass.create` | Install `kubevirt-cluster-critical` (required for UI-only clusters; set `false` if KubeVirt already created it) |
+| `priorityClass.create` | Install `kubevirt-ui-cluster-critical` (operator-owned; set `false` if you manage the class elsewhere) |
 
 ## Uninstall
 
