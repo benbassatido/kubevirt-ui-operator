@@ -37,7 +37,9 @@ func CacheOptions(cfg Config) cache.Options {
 			Field: fields.OneTermEqualSelector("metadata.name", platform.ConsolePluginCRDName),
 		},
 	}
-	if cfg.HCONamespace != "" {
+	// HyperConverged is registered only when the CRD exists at startup; otherwise the
+	// informer cannot start. Late HCO installs are handled via the CRD watch + reconcile.
+	if cfg.HCONamespace != "" && cfg.HCOInstalled {
 		byObject[&hcoversion.HyperConverged{}] = cache.ByObject{
 			Namespaces: map[string]cache.Config{
 				cfg.HCONamespace: {},

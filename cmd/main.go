@@ -97,9 +97,10 @@ func main() {
 	}
 
 	if err = (&controllers.KubeVirtConsoleUIReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-		Config: opCfg,
+		Client:    mgr.GetClient(),
+		APIReader: mgr.GetAPIReader(),
+		Scheme:    mgr.GetScheme(),
+		Config:    opCfg,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "KubeVirtConsoleUI")
 		os.Exit(1)

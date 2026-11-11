@@ -23,7 +23,7 @@ func (r *KubeVirtConsoleUIReconciler) reconcile(
 
 	var reconcileErr error
 	if met {
-		reconcileErr = manifests.ReconcileStack(ctx, r.Client, r.Scheme, mctx)
+		reconcileErr = manifests.ReconcileStack(ctx, r.Client, r.APIReader, r.Scheme, mctx)
 	} else {
 		reconcileErr = fmt.Errorf("%s: %s", reason, message)
 	}

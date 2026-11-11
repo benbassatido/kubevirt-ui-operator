@@ -40,9 +40,10 @@ func TestReconcilePlatformRequirementsNotMetWithoutOpenShiftConsole(t *testing.T
 	}
 
 	r := &KubeVirtConsoleUIReconciler{
-		Client: k8sClient,
-		Scheme: testScheme,
-		Config: operconfig.LoadFromEnv(),
+		Client:    k8sClient,
+		APIReader: k8sClient,
+		Scheme:    testScheme,
+		Config:    operconfig.LoadFromEnv(),
 	}
 	if _, err := r.Reconcile(ctx, ctrl.Request{Name: names.ResourceName}); err != nil {
 		t.Fatalf("reconcile: %v", err)

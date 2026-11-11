@@ -2,7 +2,9 @@
 
 Kubernetes operator and install assets for the **OpenShift Virtualization console UI** stack: the dynamic plugin, apiserver-proxy, UI configuration, and everything the cluster needs to run the KubeVirt UI **without** owning the virtualization backend (KubeVirt, CDI, CNAO, and the rest of the CNV/HCO operands).
 
-Today this repository ships a **Helm chart** and an **alpha operator controller** (`main.go`, `controllers/`) that reconcile the same stack from a `KubeVirtConsoleUI` CR. The chart remains a supported bootstrap path; the CR is the long-term day-2 interface.
+Today this repository ships a **Helm chart** and an **alpha operator controller** (`cmd/main.go`, `controllers/`) that reconcile the same stack from a **cluster-scoped** `KubeVirtConsoleUI` CR (singleton name **`cluster`**). The chart remains a supported bootstrap path; the CR is the long-term day-2 interface.
+
+UI operands always land in namespace **`kubevirt-ui`** by default (`OPERAND_NAMESPACE` on the manager). **`HCO_NAMESPACE`** (default **`openshift-cnv`**) is **not** the install namespace—it is only where the operator looks for HyperConverged when CNV/HCO is present, to set **`hcoVersion`** on the `kubevirt-ui-features` ConfigMap.
 
 ## Why this repo exists
 
@@ -52,7 +54,7 @@ Planned additions: envtest/e2e on OpenShift, published operator image defaults, 
 Prerequisites:
 
 - **OpenShift Console:** Console Operator healthy, `ConsolePlugin` CRD (`console.openshift.io`), console UI running in `openshift-console`; cluster admin or equivalent if enabling automatic plugin registration on `consoles.operator.openshift.io/cluster`
-- Namespace **`kubevirt-ui`** by default (same as operator `OPERAND_NAMESPACE`)—do **not** install on top of an existing HCO-managed UI in the same namespace
+- Operand namespace **`kubevirt-ui`** (chart creates it by default; same as operator `OPERAND_NAMESPACE`)—do **not** colocate with HCO’s UI operands in **`openshift-cnv`**
 - KubeVirt API available to users (RBAC + running control plane)
 - Container images for plugin and proxy (pin to your CNV/HCO versions when possible)
 
@@ -61,14 +63,29 @@ Full prerequisite list: [docs/ROADMAP.md#prerequisites-cluster-and-console](docs
 ```bash
 helm upgrade --install kubevirt-ui ./helm/kubevirt-console-ui \
   --namespace kubevirt-ui \
-  --create-namespace \
   --set plugin.image=quay.io/kubevirt-ui/kubevirt-plugin:<tag> \
   --set proxy.image=quay.io/kubevirt-ui/kubevirt-apiserver-proxy:<tag>
 ```
 
+The chart sets **`createNamespace: true`** by default (labeled `Namespace` resource; do not also pass **`--create-namespace`**). Leave **`config.features.hcoVersion`** empty unless you set it manually; the operator discovers HCO version from **`HCO_NAMESPACE`** when HyperConverged is installed.
+
 Image references used by HCO are defined in [`deploy/images.env`](https://github.com/kubevirt/hyperconverged-cluster-operator/blob/main/deploy/images.env) (`KUBEVIRT_CONSOLE_PLUGIN_IMAGE`, `KUBEVIRT_CONSOLE_PROXY_IMAGE`).
 
 Full chart documentation: [`helm/kubevirt-console-ui/README.md`](helm/kubevirt-console-ui/README.md).
+
+## Quick start (operator)
+
+Install the cluster-scoped CRD and manager, then create the singleton CR (operands reconcile into **`kubevirt-ui`**):
+
+```bash
+make install     # CRD (KubeVirtConsoleUI, scope: Cluster)
+export IMG=quay.io/<your-user>/kubevirt-ui-operator:dev
+make docker-build docker-push
+make deploy      # kubevirt-ui namespace, manager Deployment, RBAC
+./scripts/apply-sample-cr.sh
+```
+
+Apply **`config/samples/consoleui_v1alpha1_kubevirtconsoleui.yaml`** yourself if you prefer: **`metadata.name` must be `cluster`**. Override operand namespace with **`OPERAND_NAMESPACE`** on the manager; override HCO lookup with **`HCO_NAMESPACE`** (default **`openshift-cnv`**, or **`HCO_NAMESPACE=`** to disable `hcoVersion` patching). See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for local `make run`, undeploy, and OLM bundle workflows.
 
 ## Roadmap
 

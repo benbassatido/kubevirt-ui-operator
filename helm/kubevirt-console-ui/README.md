@@ -33,35 +33,24 @@ A Route for apiserver-proxy is **on by default** (`route.enabled`); disable it i
 ## Prerequisites
 
 - **OpenShift Console:** Console Operator available; `ConsolePlugin` CRD (`console.openshift.io`); console UI pods in `openshift-console` (required for default NetworkPolicy ingress). If `console.registerPlugin` is enabled, permissions to update `consoles.operator.openshift.io/cluster` `spec.plugins`.
-- Namespace (default **`kubevirt-ui`**, same as operator `OPERAND_NAMESPACE`) — set `createNamespace: true` or create it before install
+- Operand namespace **`kubevirt-ui`** by default (same as operator **`OPERAND_NAMESPACE`**). The chart creates it when **`createNamespace: true`** (default).
 - **KubeVirt control plane** reachable via the Kubernetes API (this chart does not install it)
-- Avoid duplicate installs: if CNV/HCO already manages the UI in `openshift-cnv`, do not install a second stack there; use `--set namespace=openshift-cnv` only when replacing/migrating deliberately
+- Do not install a second UI stack in **`openshift-cnv`** while CNV/HCO still owns the console plugin there. This chart (and the operator) target **`kubevirt-ui`**; **`openshift-cnv`** is only relevant to the **operator** via **`HCO_NAMESPACE`** for optional **`hcoVersion`** on the features ConfigMap when HyperConverged exists.
 
 Full list: [docs/ROADMAP.md#prerequisites-cluster-and-console](../../docs/ROADMAP.md#prerequisites-cluster-and-console).
 
 ## Install
 
-Default (operator-parity namespace and labels; images on `quay.io/kubevirt-ui`):
+Default (operand namespace **`kubevirt-ui`**, operator-parity labels; images on `quay.io/kubevirt-ui`):
 
 ```bash
 helm upgrade --install kubevirt-ui ./helm/kubevirt-console-ui \
   --namespace kubevirt-ui \
-  --create-namespace \
   --set plugin.image=quay.io/kubevirt-ui/kubevirt-plugin:<tag> \
   --set proxy.image=quay.io/kubevirt-ui/kubevirt-apiserver-proxy:<tag>
 ```
 
-CNV namespace (HCO-aligned labels optional via `hcoLabels.enabled=true`):
-
-```bash
-helm upgrade --install kubevirt-ui ./helm/kubevirt-console-ui \
-  --namespace openshift-cnv \
-  --set namespace=openshift-cnv \
-  --set createNamespace=false \
-  --set hcoLabels.enabled=true \
-  --set plugin.image=quay.io/kubevirt-ui/kubevirt-plugin:<tag> \
-  --set proxy.image=quay.io/kubevirt-ui/kubevirt-apiserver-proxy:<tag>
-```
+For the **operator** path instead of Helm, install the cluster-scoped **`KubeVirtConsoleUI`** named **`cluster`** after deploying the manager—see the root [README](../../README.md#quick-start-operator).
 
 Pin images to the same versions shipped with your CNV release (see HCO `deploy/images.env`: `KUBEVIRT_CONSOLE_PLUGIN_IMAGE`, `KUBEVIRT_CONSOLE_PROXY_IMAGE`).
 
@@ -69,13 +58,15 @@ Pin images to the same versions shipped with your CNV release (see HCO `deploy/i
 
 | Value | Purpose |
 |-------|---------|
+| `namespace` | Operand namespace for Deployments, Services, ConfigMaps (**default `kubevirt-ui`**) |
+| `createNamespace` | Render a labeled **`Namespace`** for operands (**default `true`**) |
 | `plugin.image` / `proxy.image` | Container images (`quay.io/kubevirt-ui/...`; pin tags in production) |
 | `plugin.replicas` / `proxy.replicas` | HA replica count (HCO uses 2 on highly available infra) |
 | `networkPolicy.enabled` | Network segmentation for plugin/proxy (**default `true`**); not required for TLS—set `false` if rules block your console traffic |
 | `route.enabled` + `route.host` | Public Route for apiserver-proxy (local/off-cluster console) |
 | `console.registerPlugin` | Helm hook patches `consoles.operator.openshift.io/cluster` |
 | `hcoLabels.enabled` | HCO-style labels (`app: kubevirt-hyperconverged`); default **`false`** (operator-owned labels) |
-| `config.features.hcoVersion` | Leave empty to omit from ConfigMap (operator sets from HCO when installed) |
+| `config.features.hcoVersion` | Leave empty in Helm; the operator sets **`hcoVersion`** from **`HCO_NAMESPACE`** (default **`openshift-cnv`**) when HyperConverged is installed |
 | `priorityClass.create` | Install `kubevirt-cluster-critical` (required for UI-only clusters; set `false` if KubeVirt already created it) |
 
 ## Uninstall

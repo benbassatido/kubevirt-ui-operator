@@ -32,8 +32,9 @@ import (
 // KubeVirtConsoleUIReconciler reconciles the console UI stack for a KubeVirtConsoleUI CR.
 type KubeVirtConsoleUIReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
-	Config operconfig.Config
+	APIReader client.Reader
+	Scheme    *runtime.Scheme
+	Config    operconfig.Config
 }
 
 // +kubebuilder:rbac:groups=consoleui.kubevirt.io,resources=kubevirtconsoleuis,verbs=get;list;watch;create;update;patch;delete
@@ -125,7 +126,7 @@ func (r *KubeVirtConsoleUIReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			})),
 		)
 
-	if r.Config.HCONamespace != "" {
+	if r.Config.HCONamespace != "" && r.Config.HCOInstalled {
 		inHCONS := predicate.NewPredicateFuncs(func(o client.Object) bool {
 			return o.GetNamespace() == r.Config.HCONamespace
 		})
