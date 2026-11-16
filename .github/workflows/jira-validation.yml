@@ -20,7 +20,6 @@ jobs:
     steps:
       - name: Generate bot token
         id: bot-token
-        continue-on-error: true
         uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.BOT_APP_ID }}
@@ -29,15 +28,22 @@ jobs:
           permission-pull-requests: write
           permission-issues: write
 
+      - name: Require bot token
+        run: |
+          if [ -z "${{ steps.bot-token.outputs.token }}" ]; then
+            echo "::error::GitHub App bot token is empty. Check repository secrets BOT_APP_ID and BOT_APP_PRIVATE_KEY, and confirm the GitHub App is installed on this repository with access to pull requests and issues."
+            exit 1
+          fi
+
       - name: Validate PR title against Jira
-        uses: kubevirt-ui/kubevirt-validation@d6be6150e1820202f8e03389e4a80b360514fe1a
+        uses: kubevirt-ui/kubevirt-validation@v1
         with:
           base-branch: ${{ github.event.pull_request.base.ref }}
           head-sha: ${{ github.event.pull_request.head.sha }}
           pr-number: ${{ github.event.pull_request.number }}
           pr-title: ${{ github.event.pull_request.title }}
-          repo-owner: ${{ github.repository_owner }}
-          repo-name: ${{ github.event.repository.name }}
+          repo-owner: ${{ github.event.pull_request.base.repo.owner.login }}
+          repo-name: ${{ github.event.pull_request.base.repo.name }}
         env:
           BOT_TOKEN: ${{ steps.bot-token.outputs.token }}
           GITHUB_TOKEN: ${{ github.token }}
